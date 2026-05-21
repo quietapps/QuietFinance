@@ -1,0 +1,24 @@
+---
+description: FinanceTracker macOS app — SwiftUI, SwiftData, proprietary; coding and product constraints
+alwaysApply: true
+---
+
+# FinanceTracker (Ledgerly)
+
+- **Stack:** macOS, SwiftUI, SwiftData (`FinanceTracker/`). Project: `FinanceTracker.xcodeproj`.
+
+- **Licence:** Proprietary — see `LICENSE`. Do not imply OSS or grant redistribution; no repurposing without written approval.
+
+- **Changes:** Minimal, task-scoped diffs. Match surrounding Swift style and patterns; no unrelated cleanup.
+
+- **Models:** Register every `@Model` in `Schema([...])` in `FinanceTracker/App/FinanceTrackerApp.swift`. Prefer additive migrations; coordinate `SeedData`, CSV import/export, and PDF flows when schemas change.
+
+- **Product invariants:** Locked snapshots stay immutable where the app promises it. FX (`frankfurter.app`) must not overwrite locked snapshot rates/values.
+
+- **Navigation:** New screens → `Screen` enum in `AppState`, branch in `RootView`, sidebar entry in `Sidebar`, shortcuts in `App/AppCommands.swift` as appropriate.
+
+- **UI:** Respect `Theme`, `Primitives`, and `compactMode` environment conventions.
+
+- **Tests:** No XCTest in repo; sanity-check via running the target and affected flows.
+
+- **Docs:** Architectural detail lives in `CLAUDE.md`; releases in `CHANGELOG.md`; agent/process notes in `AGENTS.md`.

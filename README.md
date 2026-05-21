@@ -16,9 +16,37 @@ A native macOS app that tracks net worth through dated snapshots of account bala
 [![Downloads](https://img.shields.io/github/downloads/quietapps/QuietFinance/total.svg)](https://github.com/quietapps/QuietFinance/releases)
 [![Stars](https://img.shields.io/github/stars/quietapps/QuietFinance?style=social)](https://github.com/quietapps/QuietFinance/stargazers)
 
-[Features](#features) · [Build from source](#build-from-source) · [Data & Exports](#data--exports) · [FAQ](#faq)
+[Install](#install) · [Features](#features) · [Build from source](#build-from-source) · [Data & Exports](#data--exports) · [FAQ](#faq)
 
 </div>
+
+---
+
+## Install
+
+### Homebrew (recommended)
+
+```bash
+brew tap quietapps/quietfinance
+brew install --cask quietfinance
+```
+
+**Update:**
+```bash
+brew update && brew upgrade --cask quietfinance
+```
+
+**Uninstall:**
+```bash
+brew uninstall --cask quietfinance
+brew untap quietapps/quietfinance
+```
+
+> Quiet Finance is distributed unsigned. The Homebrew cask strips the Gatekeeper quarantine attribute automatically. If the app refuses to launch after a manual install, run `xattr -cr "/Applications/Quiet Finance.app"` once in Terminal.
+
+### Manual
+
+Download the latest ZIP from [Releases](https://github.com/quietapps/QuietFinance/releases), unzip, and drag **Quiet Finance.app** to `/Applications`. If Gatekeeper blocks launch: right-click → Open → confirm, or run `xattr -cr "/Applications/Quiet Finance.app"`.
 
 ---
 
@@ -163,11 +191,19 @@ defaults delete app.quiet.QuietFinance
 
 ## Uninstalling
 
+**If installed via Homebrew** (recommended — handles app + quarantine cleanup):
 ```bash
-# Remove the app
-rm -rf "/Applications/Quiet Finance.app"
+brew uninstall --cask quietfinance
+brew untap quietapps/quietfinance
+```
 
-# Remove saved settings, caches, and container data
+**Manual removal:**
+```bash
+rm -rf "/Applications/Quiet Finance.app"
+```
+
+**Remove all user data** (settings, caches, container):
+```bash
 defaults delete app.quiet.QuietFinance 2>/dev/null
 rm -rf ~/Library/Containers/app.quiet.QuietFinance \
        ~/Library/Preferences/app.quiet.QuietFinance.plist \

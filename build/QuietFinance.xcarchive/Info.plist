@@ -5,7 +5,7 @@
 	<key>ApplicationProperties</key>
 	<dict>
 		<key>ApplicationPath</key>
-		<string>Applications/QuietFinance.app</string>
+		<string>Applications/Quiet Finance.app</string>
 		<key>Architectures</key>
 		<array>
 			<string>x86_64</string>
@@ -25,7 +25,7 @@
 	<key>ArchiveVersion</key>
 	<integer>2</integer>
 	<key>CreationDate</key>
-	<date>2026-05-21T20:20:59Z</date>
+	<date>2026-05-21T20:35:36Z</date>
 	<key>Name</key>
 	<string>QuietFinance</string>
 	<key>SchemeName</key>

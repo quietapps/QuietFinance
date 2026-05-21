@@ -1,161 +1,224 @@
+<div align="center">
+
+<img src="QuietFinance/Assets.xcassets/AppIcon.appiconset/icon_512x512.png" alt="Quiet Finance" width="128" height="128" />
+
 # Quiet Finance
 
-Offline personal wealth tracker for **macOS**. Built with **SwiftUI** and **SwiftData**. Everything stays on your machine — no cloud service, no subscription, and no Apple Developer Program account is required to build and run locally.
+**Track your net worth. Offline. No subscriptions. No cloud.**
 
-Supports multiple people, countries, and currencies (notably **USD** and **INR**). Net worth is tracked through **snapshots** (point-in-time records) with charts-first navigation.
+A native macOS app that tracks net worth through dated snapshots of account balances — with charts, FX conversion, and privacy controls, all stored locally on your machine. Part of the [Quiet Apps](https://github.com/quietapps) family.
 
----
+[![macOS](https://img.shields.io/badge/macOS-26.0+-000000?logo=apple&logoColor=white)](https://www.apple.com/macos/)
+[![Swift](https://img.shields.io/badge/Swift-5.9-F05138?logo=swift&logoColor=white)](https://swift.org)
+[![SwiftUI](https://img.shields.io/badge/SwiftUI-SwiftData-2396F3?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/quietapps/QuietFinance?display_name=tag)](https://github.com/quietapps/QuietFinance/releases)
+[![Downloads](https://img.shields.io/github/downloads/quietapps/QuietFinance/total.svg)](https://github.com/quietapps/QuietFinance/releases)
+[![Stars](https://img.shields.io/github/stars/quietapps/QuietFinance?style=social)](https://github.com/quietapps/QuietFinance/stargazers)
 
-## Features (high level)
+[Features](#features) · [Build from source](#build-from-source) · [Data & Exports](#data--exports) · [FAQ](#faq)
 
-| Area | What it does |
-|------|----------------|
-| **Dashboard** | Hero net worth with embedded sparkline + inline delta chip, compare bar (vs Previous / Year ago), customizable widgets, Goal progress + ETA, Liquidity / runway, KPI cards, allocation breakdowns, movers, history, **Watchlist of pinned accounts** |
-| **Allocation (Breakdown)** | Treemap, stacked bars, filters, accounts table with % of total; cross-link from Dashboard slices |
-| **Trends** | Time-series with hover tooltips, range filters, **forecast panel** (Linear / CAGR with ±1σ band) |
-| **Snapshots** | List, create, lock/unlock, edit per-account values with live totals and deltas; **completeness badge**, **pinned snapshot tabs**, missing-row highlights, stale-account flag |
-| **Diff** (`⌘⇧D`) | Snapshot diff between two dates, with **Money Flow** Sankey visual of where value moved per account |
-| **Reports** | Period compare, **QoQ heatmap** (quarters × categories), CAGR & monthly drift, asset-type drilldown |
-| **Manage** | Inline-edit grids for **people** (name, color, "In NW" toggle, quick-add row), countries, asset types, **accounts** (optional cost basis + Unrealized column, **drag-reorder**, **pin to watchlist**, **multi-select with Bulk Edit and Account Merge**), and **receivables** (money owed to you, with start dates) |
-| **Grids** | **Sortable column headers** on every grid (ASC → DESC → unsorted, persisted), resizable columns |
-| **Import / Export** | CSV export of full history, accounts list, snapshot totals, receivables; **auto-detecting CSV import** that handles both Full history and Accounts list (creates or updates existing accounts) |
-| **Settings** | Display, **App icon** picker (Quiet Finance · Classic · Vault · Strata), **Dashboard widgets** show/hide/reorder, category colors, FX, backups, reminders, **Security** (App lock + **Auto-lock when idle** + Stealth mode + Menu bar item) |
-| **Productivity** | **⌘K command palette**, **recently viewed** list (deleted entries dimmed and struck through), search jumps directly into editors, three-level breadcrumb |
-| **Privacy** | **App lock** on launch (Touch ID / Apple Watch / system password) with **idle auto-lock**, **Stealth mode** to blur amounts |
-
-**FX**: Live **USD→INR** fetch via [frankfurter.app](https://www.frankfurter.app/) (no API key). Rates can be pinned per snapshot; locked snapshots are not rewritten.
-
-**Data safety**: Manual and automatic SQLite backups, optional restore on launch, quit-time backup hook, snapshot pre-caching for fast renders.
+</div>
 
 ---
 
-## Data model (SwiftData)
+## Why
 
-Core entities:
+Every finance app wants your bank login, a monthly fee, or both. Quiet Finance wants neither. Snapshots are point-in-time records of what each account is worth — enter them manually, see a chart, understand your trajectory. USD↔INR FX is fetched live but never rewrites a locked snapshot. Nothing leaves your machine.
 
-- `Person`, `Country`, `AssetType`, `Account`, `Snapshot`, `AssetValue`
-- `Receivable`, `ReceivableValue` — receivables and their per-snapshot balances
-- `ExchangeRateHistory` — cached FX history
+## Features
 
-Asset categories (see `Enums.swift`): Cash, Investment, Retirement, Crypto, Insurance, Debt.
+### Dashboard
+- Hero net worth with embedded sparkline and inline delta chip
+- Compare bar (vs Previous / Year ago)
+- Customizable widgets: Goal progress + ETA, Liquidity / runway, KPI cards, allocation breakdowns, movers, history
+- **Watchlist** of pinned accounts surfaced inline
+
+### Allocation & Trends
+- **Breakdown** — Treemap, stacked bars, filters, accounts table with % of total; cross-link from Dashboard slices
+- **Trends** — Time-series with hover tooltips, range filters, **forecast panel** (Linear / CAGR with ±1σ band)
+
+### Snapshots
+- Create, lock/unlock, edit per-account values with live totals and deltas
+- Completeness badge, pinned snapshot tabs, missing-row highlights, stale-account flag
+- **Diff** (`⌘⇧D`) — compare two dates with a **Money Flow** Sankey visual of where value moved
+
+### Reports
+- Period compare, **QoQ heatmap** (quarters × categories), CAGR & monthly drift, asset-type drilldown
+
+### Manage
+- Inline-edit grids for people, countries, asset types, and accounts
+- Optional cost basis + Unrealized column per account
+- **Drag-reorder**, **pin to watchlist**, **multi-select with Bulk Edit and Account Merge**
+- **Receivables** — money owed to you, with start dates and per-snapshot balances
+
+### Import / Export
+- CSV export: full history, accounts list, snapshot totals, receivables
+- **Auto-detecting CSV import** handles both Full history and Accounts list formats (creates or updates existing accounts)
+- PDF export: Dashboard snapshot and snapshot-detail reports
+
+### Privacy & Security
+- **App lock** on launch (Touch ID / Apple Watch / system password)
+- **Idle auto-lock** with configurable timeout
+- **Stealth mode** — blurs all amounts when active
+- **Menu bar item** for quick access without exposing the main window
+
+### Productivity
+- **⌘K command palette** for instant navigation
+- **Recently viewed** list with dimmed deleted entries
+- Sortable + resizable column headers on every grid, persisted across sessions
+- Three-level breadcrumb and search that jumps directly into editors
+
+### App icon picker
+Settings → **App icon** — choose from Quiet Finance, Classic, Vault, or Strata. Switches the Dock + App Switcher icon live.
+
+### FX
+Live **USD↔INR** fetch via [frankfurter.app](https://www.frankfurter.app/) (no API key required). Rates are pinned per snapshot; locked snapshots are never rewritten.
+
+### Data safety
+Manual and automatic SQLite backups, optional restore on launch, quit-time backup hook, snapshot pre-caching for fast renders.
 
 ---
 
-## Requirements
+## Build from source
 
-- **macOS** matching the project’s deployment target (see **Xcode → target → General → Minimum Deployments**; currently set in the project to a recent macOS SDK).
-- **Xcode** with Swift 5 (project uses Swift 5.0 setting).
+### Requirements
+- macOS 26.0 or later
+- Xcode 16.0 or later
 
----
+### Steps
 
-## Run from source
+```bash
+git clone <repo-url>
+cd QuietFinance
+open QuietFinance.xcodeproj
+```
 
-1. Install **Xcode** from the Mac App Store and open it once to accept the license.
-2. Open **`QuietFinance.xcodeproj`** at the repository root.
-3. **Signing**: for local runs, you can use **Sign to Run Locally** or **Team: None** as appropriate for your machine.
-4. **App Sandbox** (typical for this app):
-   - **User Selected File** → **Read/Write** (CSV/PDF save panels, backups).
-   - **Outgoing Connections (Client)** (FX fetch).
-5. Select the **My Mac** destination and press **⌘R**.
+**Signing** — for local runs, use **Sign to Run Locally** or **Team: None** as appropriate.
 
-On first launch with an empty store, **`SeedData`** inserts sample people, countries, asset types, accounts, and snapshots.
+**Sandbox entitlements** needed:
+- **User Selected File → Read/Write** (CSV/PDF save panels, backups)
+- **Outgoing Connections (Client)** (FX fetch)
 
----
+Select the **My Mac** destination and press **⌘R**.
 
-## Repository layout
+On first launch with an empty store, `SeedData` inserts sample people, countries, asset types, accounts, and snapshots.
+
+### Project layout
 
 ```
-QuietFinance.xcodeproj/     Xcode project
+QuietFinance.xcodeproj/
 QuietFinance/
-  App/                       App entry, model container, window commands, delegates
-  Models/                    SwiftData @Model types, enums, seed data
-  ViewModels/                AppState (global UI prefs + navigation)
-  Views/                     Screens: Dashboard, Breakdown, Trends, Snapshots, …
-  Utils/                     FX, CSV, PDF, backups, formatters, theme, undo stash
-  Assets.xcassets/           App icons and colors
+├── App/             # App entry, model container, window commands, delegates
+├── Models/          # SwiftData @Model types, enums, seed data
+├── ViewModels/      # AppState (global UI prefs + navigation)
+├── Views/           # Screens: Dashboard, Breakdown, Trends, Snapshots, …
+└── Utils/           # FX, CSV, PDF, backups, formatters, theme, undo stash
 ```
 
----
+### Stack
 
-## Where data lives
-
-Sandboxed installs store the SQLite file under the app’s container, for example:
-
-`~/Library/Containers/app.quiet.QuietFinance/Data/Library/Application Support/default.store`
-
-Use **Settings** to reveal the path, run **Backup database**, or copy the `.store` (and associated `-wal`/`-shm` if present when the app is quit).
-
-Bundle identifier is defined in Xcode as **`app.quiet.QuietFinance`** — if you change it, the container path changes accordingly.
-
----
-
-## Export
-
-- **CSV**: Full history, accounts list, snapshot totals, and **receivable rows** per snapshot (see `CSVExporter`).
-- **PDF**: Dashboard snapshot via `DashboardPDFExporter`; snapshot-detail PDF via `SnapshotPDFExporter`.
-
----
-
-## Stack notes
-
-- **SwiftData** on SQLite. Lightweight schema tweaks often auto-migrate; there is no custom migration versioning layer in-repo.
-- **@AppStorage** for many UI preferences; **UserDefaults** for some overrides (e.g. category colors).
+- **SwiftData** on SQLite. Lightweight schema tweaks auto-migrate; no custom migration layer.
+- **@AppStorage** for UI preferences; **UserDefaults** for category color overrides.
 - **Swift Charts** for donut, line, area, and bar visuals.
 - **Local notifications** for stale snapshot reminders (`ReminderScheduler`).
-- Menu commands wire through **`focusedSceneValue`** for `AppState`, `UndoStash`, and `ModelContext` (see `AppCommands.swift` and `RootView`).
+- Menu commands wire through **`focusedSceneValue`** (`AppCommands.swift`, `RootView`).
 
 ---
 
-## Sharing a release build
+## Data & Exports
 
-1. Scheme → **Run** → **Build Configuration**: Release (for a lean binary).
-2. **Product → Archive**, then distribute (e.g. **Copy App**).
+### Where data lives
 
-Unsigned builds trigger **Gatekeeper** warnings on other Macs until the user uses **Right-click → Open** or adjusts **Privacy & Security**. Notarized distribution requires a paid Apple Developer account.
+Sandboxed installs store the SQLite file at:
 
-**Wrap in a DMG (quick `hdiutil` example)**
-
-```bash
-mkdir QuietFinance-dmg
-cp -R QuietFinance.app QuietFinance-dmg/
-ln -s /Applications QuietFinance-dmg/Applications
-hdiutil create -volname "QuietFinance" -srcfolder QuietFinance-dmg -ov -format UDZO QuietFinance.dmg
-rm -rf QuietFinance-dmg
+```
+~/Library/Containers/app.quiet.QuietFinance/Data/Library/Application Support/default.store
 ```
 
-**Pretty (create-dmg):**
+Use **Settings → Backup** to reveal the path, run a manual backup, or copy the `.store` (and `-wal`/`-shm` files if the app is running) to a safe location.
+
+### Data model
+
+Core entities: `Person`, `Country`, `AssetType`, `Account`, `Snapshot`, `AssetValue`, `Receivable`, `ReceivableValue`, `ExchangeRateHistory`.
+
+Asset categories: Cash, Investment, Retirement, Crypto, Insurance, Debt.
+
+### Export formats
+
+- **CSV** — Full history, accounts list, snapshot totals, receivable rows per snapshot (`CSVExporter`)
+- **PDF** — Dashboard snapshot (`DashboardPDFExporter`), snapshot-detail (`SnapshotPDFExporter`)
+
+---
+
+## Configuration
+
+Settings live in `UserDefaults` (container-scoped). Reset everything with:
+
 ```bash
-brew install create-dmg
-create-dmg --volname "QuietFinance" --window-size 500 300 \
-  --icon "QuietFinance.app" 120 120 \
-  --app-drop-link 380 120 \
-  QuietFinance.dmg QuietFinance.app
+defaults delete app.quiet.QuietFinance
 ```
 
-### Friend's First Launch (unsigned = Gatekeeper warning)
-1. Open DMG → drag app to Applications.
-2. **Right-click app → Open** → confirm dialog.
-3. If still blocked (Sequoia+): **System Settings → Privacy & Security** → scroll to "was blocked" → **Open Anyway**.
-4. CLI fallback: `xattr -cr /Applications/QuietFinance.app`.
+---
 
-Unsigned path is free but shows "unidentified developer" warning. Clean distribution requires $99/yr Apple Developer account + notarization.
+## Uninstalling
+
+```bash
+# Remove the app
+rm -rf "/Applications/Quiet Finance.app"
+
+# Remove saved settings, caches, and container data
+defaults delete app.quiet.QuietFinance 2>/dev/null
+rm -rf ~/Library/Containers/app.quiet.QuietFinance \
+       ~/Library/Preferences/app.quiet.QuietFinance.plist \
+       ~/Library/Caches/app.quiet.QuietFinance \
+       ~/Library/Saved\ Application\ State/app.quiet.QuietFinance.savedState
+```
+
+> **Warning:** Deleting `~/Library/Containers/app.quiet.QuietFinance` removes all your financial data, backups, and settings permanently. Export a CSV backup first from **Settings → Export** if you want to preserve your history.
 
 ---
 
-## Troubleshooting
+## Distributing a build
 
-| Symptom | Check |
-|---------|--------|
-| Save panel / export failures | Sandbox **User Selected File** must allow **Read/Write** |
-| FX never updates | Sandbox **Outgoing Connections (Client)** |
-| No reminder notifications | **System Settings → Notifications** for the app |
-| Wrong data folder after fork | Bundle ID / container path (see above) |
+1. Scheme → **Run** → **Build Configuration: Release**.
+2. **Product → Archive**, then **Distribute → Copy App**.
+
+Unsigned builds trigger Gatekeeper on other Macs. Recipient steps:
+
+1. Drag app to `/Applications`.
+2. **Right-click → Open** → confirm dialog.
+3. If still blocked: **System Settings → Privacy & Security → Open Anyway**.
+4. CLI fallback: `xattr -cr "/Applications/Quiet Finance.app"`.
+
+Notarized distribution requires a paid Apple Developer account ($99/yr).
 
 ---
 
-## License
+## FAQ
 
-Proprietary — **all rights reserved**. Use, redistribution, modification, derivative works, and repurposing are **not** permitted without **written approval** from the copyright holder. See [`LICENSE`](LICENSE).
+**Does it sync to iCloud or any server?**
+No. Everything stays in your Mac's sandbox container. FX rates are the only outbound network call, and only when you explicitly refresh them.
+
+**What happens if I lock a snapshot?**
+Locked snapshots are immutable — FX fetches and manual edits are blocked for locked entries. Unlock first if you need to change values.
+
+**Save panels or export failing?**
+Sandbox entitlement **User Selected File → Read/Write** must be enabled. Check Xcode → target → Signing & Capabilities.
+
+**FX rates never update?**
+Sandbox entitlement **Outgoing Connections (Client)** must be enabled.
+
+**No reminder notifications?**
+Open **System Settings → Notifications** and allow notifications for Quiet Finance.
+
+**Wrong data folder after changing bundle ID?**
+The container path is tied to the bundle identifier (`app.quiet.QuietFinance`). Changing it creates a new empty container. Export your data before changing it.
+
+**How do I back up my data?**
+Settings → Backup → **Back Up Now**. The app also backs up automatically on quit. You can copy the `.store` file directly for a manual snapshot.
+
+---
 
 ## Changelog
 
@@ -163,4 +226,16 @@ Release notes are in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## AI assistants
 
-[`AGENTS.md`](AGENTS.md) summarizes how agents should work in this repo; [`CLAUDE.md`](CLAUDE.md) has deeper technical context. Cursor loads rules from **`.cursor/rules/`**.
+[`AGENTS.md`](AGENTS.md) summarizes agent workflow conventions for this repo. [`CLAUDE.md`](CLAUDE.md) has deeper technical context. Cursor loads rules from **`.cursor/rules/`**.
+
+---
+
+## License
+
+Proprietary — **all rights reserved**. Use, redistribution, modification, derivative works, and repurposing are **not** permitted without written approval from the copyright holder. See [`LICENSE`](LICENSE).
+
+---
+
+<div align="center">
+If Quiet Finance helps you understand your money, you're already ahead.
+</div>

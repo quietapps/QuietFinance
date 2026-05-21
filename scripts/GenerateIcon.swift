@@ -43,6 +43,29 @@ func ridgeColor(_ alpha: CGFloat) -> CGColor {
     CGColor(srgbRed: ridgeR, green: ridgeG, blue: ridgeB, alpha: alpha)
 }
 
+// MARK: superellipse (Apple squircle, n≈5)
+// CGPath(roundedRect:) produces a standard rounded rect whose corners differ
+// visually from the macOS squircle (continuous-curvature superellipse).
+// This function traces the true superellipse so baked-in corners match the
+// system mask exactly.
+func squirclePath(in rect: CGRect, exponent n: CGFloat = 5.0) -> CGPath {
+    let path = CGMutablePath()
+    let cx = rect.midX, cy = rect.midY
+    let a = rect.width / 2, b = rect.height / 2
+    let steps = 512
+    func sgn(_ v: CGFloat) -> CGFloat { v >= 0 ? 1 : -1 }
+    for i in 0...steps {
+        let t = CGFloat(i) * 2 * .pi / CGFloat(steps)
+        let ct = cos(t), st = sin(t)
+        let x = cx + a * sgn(ct) * pow(abs(ct), 2.0 / n)
+        let y = cy + b * sgn(st) * pow(abs(st), 2.0 / n)
+        i == 0 ? path.move(to: CGPoint(x: x, y: y))
+               : path.addLine(to: CGPoint(x: x, y: y))
+    }
+    path.closeSubpath()
+    return path
+}
+
 // MARK: render
 
 func renderIcon(size pixelSize: Int) -> CGImage? {
@@ -56,33 +79,39 @@ func renderIcon(size pixelSize: Int) -> CGImage? {
         bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
     ) else { return nil }
 
-    // Squircle clip (~22.3% corner radius, standard macOS)
-    let radius = size * 0.2234
-    let rect = CGRect(x: 0, y: 0, width: size, height: size)
-    let squircle = CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)
-    ctx.addPath(squircle)
+    // Transparent outer padding — outer ring stays transparent so the Dock
+    // composites the floating squircle at the same visual weight as other icons.
+    let pad: CGFloat = 0.09   // 9% each side → 82% art area
+    let artSize = size * (1 - 2 * pad)
+    let artOff  = size * pad
+    let artRect = CGRect(x: artOff, y: artOff, width: artSize, height: artSize)
+
+    // True superellipse clip (n=5) — matches the macOS system squircle mask exactly
+    let sq = squirclePath(in: artRect, exponent: 5.0)
+    ctx.addPath(sq)
     ctx.clip()
 
-    // Background fill
+    // Background fill (only inside the squircle — outside stays transparent)
     ctx.setFillColor(bgColor)
-    ctx.fill(rect)
+    ctx.addPath(sq)
+    ctx.fillPath()
 
-    // Scale from SVG 64-unit space; SVG Y flipped relative to CG
-    let s = size / 64.0
+    // Scale from SVG 64-unit space into the inset art area; SVG Y flipped relative to CG
+    let s = artSize / 64.0
     func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
-        CGPoint(x: x * s, y: (64 - y) * s)
+        CGPoint(x: artOff + x * s, y: artOff + (64 - y) * s)
     }
 
     // Moon — three concentric circles at SVG (48, 14)
     // outer halo
     ctx.setFillColor(ridgeColor(0.077))
-    ctx.fillEllipse(in: CGRect(x: (48 - 8) * s, y: (64 - 14 - 8) * s, width: 16 * s, height: 16 * s))
+    ctx.fillEllipse(in: CGRect(x: artOff + (48 - 8) * s, y: artOff + (64 - 14 - 8) * s, width: 16 * s, height: 16 * s))
     // mid halo
     ctx.setFillColor(ridgeColor(0.175))
-    ctx.fillEllipse(in: CGRect(x: (48 - 5.4) * s, y: (64 - 14 - 5.4) * s, width: 10.8 * s, height: 10.8 * s))
+    ctx.fillEllipse(in: CGRect(x: artOff + (48 - 5.4) * s, y: artOff + (64 - 14 - 5.4) * s, width: 10.8 * s, height: 10.8 * s))
     // bright core
     ctx.setFillColor(ridgeColor(0.65))
-    ctx.fillEllipse(in: CGRect(x: (48 - 3.2) * s, y: (64 - 14 - 3.2) * s, width: 6.4 * s, height: 6.4 * s))
+    ctx.fillEllipse(in: CGRect(x: artOff + (48 - 3.2) * s, y: artOff + (64 - 14 - 3.2) * s, width: 6.4 * s, height: 6.4 * s))
 
     // Back ridge — faintest
     let back = CGMutablePath()

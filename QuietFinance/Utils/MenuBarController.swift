@@ -55,8 +55,8 @@ final class MenuBarController: NSObject {
         item.menu = menu
         statusItem = item
 
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.refresh() }
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
+            Task { @MainActor [weak self] in self?.refresh() }
         }
     }
 

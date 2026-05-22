@@ -6,9 +6,9 @@ import AppKit
 /// running app's icon via `NSApplication.applicationIconImage`. Choice is
 /// persisted in `AppStorage` and re-applied on every launch.
 enum AppIconChoice: String, CaseIterable, Identifiable {
-    case dusk          // Default — dusk ledger bars fade to quiet
+    case classic       // Default — brand blue gradient, ascending snapshot bars
+    case dusk          // Dusk ledger bars fade to quiet
     case quietFinance  // Gold L on dark squircle
-    case classic       // Legacy — cream L with green sparkline
     case vault         // Concentric gold rings on deep teal — snapshot timeline
     case strata        // Stacked allocation bars on cream paper
 
@@ -16,9 +16,9 @@ enum AppIconChoice: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
+        case .classic:      return "Classic"
         case .dusk:         return "Dusk"
         case .quietFinance: return "Quiet Finance"
-        case .classic:      return "Classic"
         case .vault:        return "Vault"
         case .strata:       return "Strata"
         }
@@ -26,11 +26,11 @@ enum AppIconChoice: String, CaseIterable, Identifiable {
 
     var subtitle: String {
         switch self {
+        case .classic:      return "Snapshot bars on blue"
         case .dusk:         return "Ledger bars on dusk"
         case .quietFinance: return "Gold ledger on ink"
-        case .classic:      return "Cream serif with sparkline"
-        case .vault:        return "Snapshot rings on teal"
-        case .strata:       return "Allocation bars on paper"
+        case .vault:        return "Timeline arcs on ink"
+        case .strata:       return "Allocation bars on slate"
         }
     }
 

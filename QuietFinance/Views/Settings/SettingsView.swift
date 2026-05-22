@@ -461,10 +461,13 @@ struct SettingsView: View {
                     Text(choice.label)
                         .font(Typo.sans(12, weight: .semibold))
                         .foregroundStyle(Color.lInk)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                     Text(choice.subtitle)
                         .font(Typo.sans(10.5))
                         .foregroundStyle(Color.lInk3)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.75)
                 }
                 if selected {
                     HStack(spacing: 4) {
@@ -472,6 +475,8 @@ struct SettingsView: View {
                             .font(.system(size: 10))
                         Text("Active")
                             .font(Typo.eyebrow).tracking(1.2)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                     }
                     .foregroundStyle(Color.lGain)
                 } else {

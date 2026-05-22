@@ -124,10 +124,10 @@ final class AppState: ObservableObject {
         get { DashboardLayout.decodeHidden(dashboardWidgetsHiddenRaw) }
         set { dashboardWidgetsHiddenRaw = DashboardLayout.encodeHidden(newValue); objectWillChange.send() }
     }
-    @AppStorage("appIconChoice") var appIconChoiceRaw: String = AppIconChoice.dusk.rawValue
+    @AppStorage("appIconChoice") var appIconChoiceRaw: String = AppIconChoice.classic.rawValue
 
     var appIconChoice: AppIconChoice {
-        get { AppIconChoice(rawValue: appIconChoiceRaw) ?? .dusk }
+        get { AppIconChoice(rawValue: appIconChoiceRaw) ?? .classic }
         set {
             appIconChoiceRaw = newValue.rawValue
             objectWillChange.send()

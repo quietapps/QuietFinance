@@ -37,8 +37,16 @@ struct QuietFinanceApp: App {
         _ = BackupService.runIfDue()
         ReminderScheduler.check(context: container.mainContext)
         DispatchQueue.main.async { [container] in
-            let raw = UserDefaults.standard.string(forKey: "appIconChoice") ?? AppIconChoice.quietFinance.rawValue
-            AppIconSwitcher.apply(AppIconChoice(rawValue: raw) ?? .quietFinance)
+            // One-time migration: old default was "dusk"; new default is "classic".
+            // If user never explicitly changed the icon, silently upgrade them.
+            if !UserDefaults.standard.bool(forKey: "iconDefaultMigratedV2") {
+                if UserDefaults.standard.string(forKey: "appIconChoice") == "dusk" {
+                    UserDefaults.standard.set(AppIconChoice.classic.rawValue, forKey: "appIconChoice")
+                }
+                UserDefaults.standard.set(true, forKey: "iconDefaultMigratedV2")
+            }
+            let raw = UserDefaults.standard.string(forKey: "appIconChoice") ?? AppIconChoice.classic.rawValue
+            AppIconSwitcher.apply(AppIconChoice(rawValue: raw) ?? .classic)
             MenuBarController.shared.attach(container: container)
             let mb = UserDefaults.standard.object(forKey: "menuBarEnabled") as? Bool ?? false
             MenuBarController.shared.setEnabled(mb)

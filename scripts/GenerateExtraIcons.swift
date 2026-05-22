@@ -4,9 +4,16 @@ import CoreGraphics
 import ImageIO
 import UniformTypeIdentifiers
 
-// Generates two additional app icons as 256x256 PNGs into:
-//   QuietFinance/Assets.xcassets/IconVault.imageset/icon.png
-//   QuietFinance/Assets.xcassets/IconStrata.imageset/icon.png
+// Generates alternate app icons into Assets.xcassets:
+//   IconVault.imageset/icon.png
+//   IconStrata.imageset/icon.png
+//   IconClassic.imageset/icon.png
+//
+// All icons follow the Quiet Apps icon standard:
+//   - 1024×1024 canvas, 9% transparent safe-area ring
+//   - True n=5 superellipse (not CGPath(roundedRect:))
+//   - Brand blue gradient (#3D93D8 → #1A74C4 → #0E4E8A) background
+//   - White motifs only — no decorative gradients, no off-brand colors
 //
 // Usage:
 //   swift scripts/GenerateExtraIcons.swift <repo_root>
@@ -34,13 +41,74 @@ func makeContext(_ size: Int) -> CGContext {
     )!
 }
 
-func squircle(_ ctx: CGContext, size: CGFloat) -> CGPath {
-    let r = size * 0.2234
-    let path = CGPath(roundedRect: CGRect(x: 0, y: 0, width: size, height: size),
-                      cornerWidth: r, cornerHeight: r, transform: nil)
-    ctx.addPath(path)
-    ctx.clip()
+// Brand palette helpers
+
+func blueBgGradient(cs: CGColorSpace) -> CGGradient {
+    CGGradient(colorsSpace: cs,
+               colors: [CGColor(srgbRed: 0.239, green: 0.576, blue: 0.847, alpha: 1.0),  // #3D93D8
+                        CGColor(srgbRed: 0.102, green: 0.455, blue: 0.769, alpha: 1.0),  // #1A74C4
+                        CGColor(srgbRed: 0.055, green: 0.306, blue: 0.541, alpha: 1.0)] as CFArray, // #0E4E8A
+               locations: [0.0, 0.55, 1.0])!
+}
+
+func darkInkGradient(cs: CGColorSpace) -> CGGradient {
+    // Near-black: #0B0D11 → #1A1F2B — vault / premium feel
+    CGGradient(colorsSpace: cs,
+               colors: [CGColor(srgbRed: 0.133, green: 0.157, blue: 0.212, alpha: 1.0),  // #222436 top-light
+                        CGColor(srgbRed: 0.067, green: 0.082, blue: 0.110, alpha: 1.0),  // #111520
+                        CGColor(srgbRed: 0.043, green: 0.051, blue: 0.067, alpha: 1.0)] as CFArray, // #0B0D11
+               locations: [0.0, 0.55, 1.0])!
+}
+
+func slateBgGradient(cs: CGColorSpace) -> CGGradient {
+    // Cool dark slate: #1A2035 → #0D1117 — strata / layered feel
+    CGGradient(colorsSpace: cs,
+               colors: [CGColor(srgbRed: 0.137, green: 0.173, blue: 0.247, alpha: 1.0),  // #23303F top
+                        CGColor(srgbRed: 0.082, green: 0.110, blue: 0.173, alpha: 1.0),  // #141C2C mid
+                        CGColor(srgbRed: 0.051, green: 0.067, blue: 0.102, alpha: 1.0)] as CFArray, // #0D111A
+               locations: [0.0, 0.55, 1.0])!
+}
+
+// True n=5 superellipse — matches macOS system squircle mask exactly.
+// CGPath(roundedRect:) is NOT used because its corners diverge visually
+// from the continuous-curvature superellipse macOS composites in the Dock.
+func squirclePath(in rect: CGRect, n: CGFloat = 5.0) -> CGPath {
+    let path = CGMutablePath()
+    let cx = rect.midX, cy = rect.midY
+    let a = rect.width / 2, b = rect.height / 2
+    let steps = 512
+    func sgn(_ v: CGFloat) -> CGFloat { v >= 0 ? 1 : -1 }
+    for i in 0...steps {
+        let t = CGFloat(i) * 2 * .pi / CGFloat(steps)
+        let ct = cos(t), st = sin(t)
+        let x = cx + a * sgn(ct) * pow(abs(ct), 2.0 / n)
+        let y = cy + b * sgn(st) * pow(abs(st), 2.0 / n)
+        i == 0 ? path.move(to: CGPoint(x: x, y: y))
+               : path.addLine(to: CGPoint(x: x, y: y))
+    }
+    path.closeSubpath()
     return path
+}
+
+// Clips ctx to the squircle art area and fills the given gradient top→bottom.
+// Returns artRect for callers to place motifs within.
+@discardableResult
+func applyBg(_ ctx: CGContext, size: CGFloat, gradient: CGGradient) -> CGRect {
+    let pad: CGFloat = 0.09
+    let artSize = size * (1 - 2 * pad)
+    let artOff  = size * pad
+    let artRect = CGRect(x: artOff, y: artOff, width: artSize, height: artSize)
+
+    let sq = squirclePath(in: artRect)
+    ctx.addPath(sq)
+    ctx.clip()
+
+    ctx.drawLinearGradient(gradient,
+        start: CGPoint(x: artOff + artSize * 0.25, y: artOff + artSize),
+        end:   CGPoint(x: artOff + artSize * 0.75, y: artOff),
+        options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
+
+    return artRect
 }
 
 func writePNG(_ image: CGImage, to url: URL) throws {
@@ -52,7 +120,7 @@ func writePNG(_ image: CGImage, to url: URL) throws {
         throw NSError(domain: "icon", code: 1)
     }
     CGImageDestinationAddImage(dest, image, nil)
-    if !CGImageDestinationFinalize(dest) {
+    guard CGImageDestinationFinalize(dest) else {
         throw NSError(domain: "icon", code: 2)
     }
 }
@@ -86,181 +154,189 @@ func writeContentsJSON(at imagesetURL: URL) throws {
 }
 
 // MARK: - Vault icon
+// Motif: three concentric white arcs (radial snapshot timeline) + today dot.
+// Reads as a vault dial / orbital tracker — each ring = a point in time.
 
 func renderVault(_ pixels: Int) -> CGImage {
     let size = CGFloat(pixels)
     let ctx = makeContext(pixels)
     let cs = CGColorSpaceCreateDeviceRGB()
-    let outline = squircle(ctx, size: size)
+    let art = applyBg(ctx, size: size, gradient: darkInkGradient(cs: cs))
 
-    // Background — deep teal radial.
-    let bgTop    = CGColor(srgbRed: 0.060, green: 0.155, blue: 0.180, alpha: 1.0)
-    let bgMid    = CGColor(srgbRed: 0.035, green: 0.095, blue: 0.120, alpha: 1.0)
-    let bgBottom = CGColor(srgbRed: 0.018, green: 0.052, blue: 0.072, alpha: 1.0)
-    let bgGrad = CGGradient(colorsSpace: cs,
-                            colors: [bgTop, bgMid, bgBottom] as CFArray,
-                            locations: [0.0, 0.55, 1.0])!
-    ctx.drawRadialGradient(bgGrad,
-        startCenter: CGPoint(x: size * 0.5, y: size * 0.95),
-        startRadius: 0,
-        endCenter: CGPoint(x: size * 0.5, y: size * 0.35),
-        endRadius: size * 1.05,
-        options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
+    let cx = art.midX
+    let cy = art.midY
 
-    // Concentric gold rings — three "snapshot" rings + one bright outer.
-    let center = CGPoint(x: size * 0.5, y: size * 0.5)
-    let goldFaint  = CGColor(srgbRed: 0.78, green: 0.62, blue: 0.32, alpha: 0.35)
-    let goldMid    = CGColor(srgbRed: 0.86, green: 0.70, blue: 0.38, alpha: 0.65)
-    let goldBright = CGColor(srgbRed: 0.97, green: 0.83, blue: 0.50, alpha: 1.0)
-
-    let radii: [(CGFloat, CGColor, CGFloat)] = [
-        (size * 0.16, goldFaint,  max(1.5, size * 0.010)),
-        (size * 0.24, goldMid,    max(1.5, size * 0.011)),
-        (size * 0.32, goldBright, max(2.0, size * 0.014)),
+    // Three concentric arcs — innermost faintest, outermost brightest
+    struct Ring { let radiusFrac: CGFloat; let alpha: CGFloat; let lineWidthFrac: CGFloat }
+    let rings: [Ring] = [
+        Ring(radiusFrac: 0.18, alpha: 0.35, lineWidthFrac: 0.028),
+        Ring(radiusFrac: 0.28, alpha: 0.60, lineWidthFrac: 0.028),
+        Ring(radiusFrac: 0.38, alpha: 1.00, lineWidthFrac: 0.032),
     ]
-    for (r, color, w) in radii {
-        ctx.setStrokeColor(color)
-        ctx.setLineWidth(w)
-        ctx.strokeEllipse(in: CGRect(x: center.x - r, y: center.y - r,
-                                      width: r * 2, height: r * 2))
+
+    // Arc spans ~300° (open at bottom-left for breathing room)
+    let startAngle: CGFloat = .pi * 1.30   // ~234°
+    let endAngle:   CGFloat = .pi * -0.10  // ~-18° = 342°
+
+    for ring in rings {
+        let r = art.width * ring.radiusFrac
+        let lw = art.width * ring.lineWidthFrac
+        ctx.setStrokeColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: ring.alpha))
+        ctx.setLineWidth(lw)
+        ctx.setLineCap(.round)
+        ctx.addArc(center: CGPoint(x: cx, y: cy),
+                   radius: r,
+                   startAngle: startAngle, endAngle: endAngle,
+                   clockwise: false)
+        ctx.strokePath()
     }
 
-    // Soft glow on outer ring.
+    // Today marker: bright dot on outermost arc at the end angle
+    let outerR = art.width * rings[2].radiusFrac
+    let dotX = cx + outerR * cos(endAngle)
+    let dotY = cy + outerR * sin(endAngle)
+    let dotR = art.width * 0.040
+
     ctx.saveGState()
-    ctx.setShadow(offset: .zero, blur: size * 0.04, color: goldBright)
-    ctx.setStrokeColor(goldBright)
-    ctx.setLineWidth(max(2, size * 0.012))
-    let outerR = size * 0.32
-    ctx.strokeEllipse(in: CGRect(x: center.x - outerR, y: center.y - outerR,
-                                  width: outerR * 2, height: outerR * 2))
+    ctx.setShadow(offset: .zero, blur: art.width * 0.05,
+                  color: CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.60))
+    ctx.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.28))
+    ctx.fillEllipse(in: CGRect(x: dotX - dotR * 1.9, y: dotY - dotR * 1.9,
+                                width: dotR * 3.8, height: dotR * 3.8))
+    ctx.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 1.0))
+    ctx.fillEllipse(in: CGRect(x: dotX - dotR, y: dotY - dotR,
+                                width: dotR * 2, height: dotR * 2))
     ctx.restoreGState()
 
-    // Bright marker dot on outer ring (top — "now").
-    let markerR = size * 0.024
-    let markerCenter = CGPoint(x: center.x, y: center.y + outerR)
-    ctx.saveGState()
-    ctx.setShadow(offset: .zero, blur: size * 0.05, color: goldBright)
-    ctx.setFillColor(goldBright)
-    ctx.fillEllipse(in: CGRect(x: markerCenter.x - markerR,
-                                y: markerCenter.y - markerR,
-                                width: markerR * 2, height: markerR * 2))
-    ctx.restoreGState()
-
-    // Center dot.
-    let coreR = size * 0.012
-    ctx.setFillColor(goldBright)
-    ctx.fillEllipse(in: CGRect(x: center.x - coreR, y: center.y - coreR,
-                                width: coreR * 2, height: coreR * 2))
-
-    // Faint vertical axis line through center for compass-like cue.
-    ctx.setStrokeColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.06))
-    ctx.setLineWidth(max(1, size / 256))
-    ctx.move(to: CGPoint(x: center.x, y: size * 0.10))
-    ctx.addLine(to: CGPoint(x: center.x, y: size * 0.90))
-    ctx.strokePath()
-
-    // Squircle inner highlight.
-    ctx.setStrokeColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.10))
-    ctx.setLineWidth(max(1, size / 400))
-    ctx.addPath(outline)
+    // Inner edge highlight
+    let sq = squirclePath(in: art)
+    ctx.setStrokeColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.14))
+    ctx.setLineWidth(max(1, size / 300))
+    ctx.addPath(sq)
     ctx.strokePath()
 
     return ctx.makeImage()!
 }
 
 // MARK: - Strata icon
+// Motif: five left-aligned white horizontal bars, descending width top→bottom.
+// Represents asset allocation breakdown — each bar = a category's proportion.
 
 func renderStrata(_ pixels: Int) -> CGImage {
     let size = CGFloat(pixels)
     let ctx = makeContext(pixels)
     let cs = CGColorSpaceCreateDeviceRGB()
-    let outline = squircle(ctx, size: size)
+    let art = applyBg(ctx, size: size, gradient: slateBgGradient(cs: cs))
 
-    // Cream paper background with very faint grain (radial highlight).
-    let paperHi = CGColor(srgbRed: 0.985, green: 0.972, blue: 0.940, alpha: 1.0)
-    let paperLo = CGColor(srgbRed: 0.940, green: 0.918, blue: 0.876, alpha: 1.0)
-    let paperGrad = CGGradient(colorsSpace: cs,
-                               colors: [paperHi, paperLo] as CFArray,
-                               locations: [0.0, 1.0])!
-    ctx.drawRadialGradient(paperGrad,
-        startCenter: CGPoint(x: size * 0.30, y: size * 0.78),
-        startRadius: 0,
-        endCenter:   CGPoint(x: size * 0.50, y: size * 0.50),
-        endRadius:   size * 0.90,
-        options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
-
-    // Five stacked horizontal bars representing allocation categories.
-    // Widths chosen to suggest a real distribution (largest to smallest).
-    struct Bar { let widthFrac: CGFloat; let color: CGColor }
-    let palette: [Bar] = [
-        Bar(widthFrac: 0.78, color: CGColor(srgbRed: 0.110, green: 0.290, blue: 0.330, alpha: 1.0)), // deep teal
-        Bar(widthFrac: 0.62, color: CGColor(srgbRed: 0.230, green: 0.470, blue: 0.420, alpha: 1.0)), // sage
-        Bar(widthFrac: 0.50, color: CGColor(srgbRed: 0.820, green: 0.640, blue: 0.310, alpha: 1.0)), // gold
-        Bar(widthFrac: 0.34, color: CGColor(srgbRed: 0.690, green: 0.380, blue: 0.220, alpha: 1.0)), // copper
-        Bar(widthFrac: 0.20, color: CGColor(srgbRed: 0.380, green: 0.220, blue: 0.180, alpha: 1.0)), // ink-brown
+    struct Bar { let widthFrac: CGFloat; let alpha: CGFloat }
+    let bars: [Bar] = [
+        Bar(widthFrac: 0.72, alpha: 1.00),
+        Bar(widthFrac: 0.58, alpha: 0.78),
+        Bar(widthFrac: 0.46, alpha: 0.60),
+        Bar(widthFrac: 0.32, alpha: 0.45),
+        Bar(widthFrac: 0.20, alpha: 0.32),
     ]
 
-    let leftPad   = size * 0.155
-    let topPad    = size * 0.215
-    let bottomPad = size * 0.215
-    let totalH    = size - topPad - bottomPad
-    let barCount  = CGFloat(palette.count)
-    let gap       = size * 0.024
-    let barH      = (totalH - gap * (barCount - 1)) / barCount
-    let radius    = barH * 0.42
-    let maxBarW   = size - leftPad * 2
+    let barCount  = CGFloat(bars.count)
+    let leftPad   = art.minX + art.width * 0.155
+    let topPad    = art.minY + art.height * 0.200
+    let availH    = art.height * 0.600
+    let gap       = art.height * 0.028
+    let barH      = (availH - gap * (barCount - 1)) / barCount
+    let barRadius = barH * 0.42
+    let maxW      = art.width * 0.720
 
-    for (i, bar) in palette.enumerated() {
-        // y from top — convert to CG bottom-origin.
-        let topY = size - topPad - barH - CGFloat(i) * (barH + gap)
-        let w = maxBarW * bar.widthFrac
-        let rect = CGRect(x: leftPad, y: topY, width: w, height: barH)
-        let path = CGPath(roundedRect: rect, cornerWidth: radius,
-                          cornerHeight: radius, transform: nil)
+    for (i, bar) in bars.enumerated() {
+        let y = topPad + CGFloat(i) * (barH + gap)
+        let w = maxW * bar.widthFrac
+        let rect = CGRect(x: leftPad, y: y, width: w, height: barH)
+        let path = CGPath(roundedRect: rect, cornerWidth: barRadius,
+                          cornerHeight: barRadius, transform: nil)
         ctx.addPath(path)
-        ctx.setFillColor(bar.color)
+        ctx.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: bar.alpha))
         ctx.fillPath()
-
-        // Tiny tick at end of each bar for "value" mark.
-        let tickR = barH * 0.18
-        ctx.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.55))
-        ctx.fillEllipse(in: CGRect(x: leftPad + w - tickR * 2 - barH * 0.20,
-                                    y: topY + barH / 2 - tickR,
-                                    width: tickR * 2, height: tickR * 2))
     }
 
-    // Vertical baseline guide on the left (paper rule).
-    let inkBrown = CGColor(srgbRed: 0.380, green: 0.220, blue: 0.180, alpha: 0.55)
-    ctx.setStrokeColor(inkBrown)
-    ctx.setLineWidth(max(2, size * 0.012))
-    ctx.move(to: CGPoint(x: leftPad - size * 0.022, y: bottomPad))
-    ctx.addLine(to: CGPoint(x: leftPad - size * 0.022, y: size - topPad))
+    // Left baseline rule
+    ctx.setStrokeColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.22))
+    ctx.setLineWidth(max(1, size / 200))
+    ctx.setLineCap(.round)
+    let ruleX = leftPad - art.width * 0.030
+    ctx.move(to: CGPoint(x: ruleX, y: topPad - barH * 0.2))
+    ctx.addLine(to: CGPoint(x: ruleX, y: topPad + availH + barH * 0.2))
     ctx.strokePath()
 
-    // Small gold "L" wordmark in top-left corner area.
-    NSGraphicsContext.saveGraphicsState()
-    NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: false)
-    let fontSize = size * 0.16
-    let font = NSFont(name: "Times-Italic", size: fontSize)
-            ?? NSFont(name: "TimesNewRomanPS-ItalicMT", size: fontSize)
-            ?? NSFont.systemFont(ofSize: fontSize)
-    let goldText = NSColor(srgbRed: 0.640, green: 0.470, blue: 0.180, alpha: 1.0)
-    let attrs: [NSAttributedString.Key: Any] = [
-        .font: font,
-        .foregroundColor: goldText,
-        .kern: -fontSize * 0.04
-    ]
-    let lStr = NSAttributedString(string: "L", attributes: attrs)
-    // Top-right: size * 0.78, top area
-    let lSize = lStr.size()
-    lStr.draw(at: CGPoint(x: size - lSize.width - size * 0.14,
-                          y: size - lSize.height - size * 0.06))
-    NSGraphicsContext.restoreGraphicsState()
+    // Inner edge highlight
+    let sq = squirclePath(in: art)
+    ctx.setStrokeColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.14))
+    ctx.setLineWidth(max(1, size / 300))
+    ctx.addPath(sq)
+    ctx.strokePath()
 
-    // Inner border (very subtle).
-    ctx.setStrokeColor(CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 0.06))
-    ctx.setLineWidth(max(1, size / 256))
-    ctx.addPath(outline)
+    return ctx.makeImage()!
+}
+
+// MARK: - Classic icon (brand blue + ascending snapshot bars)
+
+func renderClassic(_ pixels: Int) -> CGImage {
+    let size = CGFloat(pixels)
+    let ctx = makeContext(pixels)
+    let cs = CGColorSpaceCreateDeviceRGB()
+    let art = applyBg(ctx, size: size, gradient: blueBgGradient(cs: cs))
+
+    struct Bar { let heightFrac: CGFloat; let alpha: CGFloat }
+    let bars: [Bar] = [
+        Bar(heightFrac: 0.22, alpha: 0.42),
+        Bar(heightFrac: 0.30, alpha: 0.48),
+        Bar(heightFrac: 0.26, alpha: 0.48),
+        Bar(heightFrac: 0.40, alpha: 0.54),
+        Bar(heightFrac: 0.36, alpha: 0.54),
+        Bar(heightFrac: 0.54, alpha: 1.00),
+    ]
+
+    let barCount  = CGFloat(bars.count)
+    let sidePad   = art.width * 0.195
+    let bottomPad = art.height * 0.225
+    let topPad    = art.height * 0.190
+    let maxBarH   = art.height - topPad - bottomPad
+    let totalBarW = art.width - sidePad * 2
+    let gap       = art.width * 0.030
+    let barW      = (totalBarW - gap * (barCount - 1)) / barCount
+    let barRadius = barW * 0.34
+
+    for (i, bar) in bars.enumerated() {
+        let barH = maxBarH * bar.heightFrac
+        let x = art.minX + sidePad + CGFloat(i) * (barW + gap)
+        let y = art.minY + bottomPad
+        let rect = CGRect(x: x, y: y, width: barW, height: barH)
+        let path = CGPath(roundedRect: rect, cornerWidth: barRadius,
+                          cornerHeight: barRadius, transform: nil)
+        ctx.addPath(path)
+        ctx.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: bar.alpha))
+        ctx.fillPath()
+    }
+
+    let lastIdx  = bars.count - 1
+    let lastBarH = maxBarH * bars[lastIdx].heightFrac
+    let lastX    = art.minX + sidePad + CGFloat(lastIdx) * (barW + gap) + barW / 2
+    let dotY     = art.minY + bottomPad + lastBarH + art.height * 0.055
+    let dotR     = art.width * 0.040
+
+    ctx.saveGState()
+    ctx.setShadow(offset: .zero, blur: art.width * 0.04,
+                  color: CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.55))
+    ctx.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.28))
+    ctx.fillEllipse(in: CGRect(x: lastX - dotR * 1.9, y: dotY - dotR * 1.9,
+                                width: dotR * 3.8, height: dotR * 3.8))
+    ctx.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 1.0))
+    ctx.fillEllipse(in: CGRect(x: lastX - dotR, y: dotY - dotR,
+                                width: dotR * 2, height: dotR * 2))
+    ctx.restoreGState()
+
+    let sq = squirclePath(in: art)
+    ctx.setStrokeColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.14))
+    ctx.setLineWidth(max(1, size / 300))
+    ctx.addPath(sq)
     ctx.strokePath()
 
     return ctx.makeImage()!
@@ -269,8 +345,9 @@ func renderStrata(_ pixels: Int) -> CGImage {
 // MARK: - Drive
 
 let outputs: [(name: String, image: CGImage)] = [
-    ("IconVault.imageset",  renderVault(pixelSize)),
-    ("IconStrata.imageset", renderStrata(pixelSize)),
+    ("IconVault.imageset",   renderVault(pixelSize)),
+    ("IconStrata.imageset",  renderStrata(pixelSize)),
+    ("IconClassic.imageset", renderClassic(pixelSize)),
 ]
 
 for (name, image) in outputs {

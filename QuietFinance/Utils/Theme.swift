@@ -34,25 +34,55 @@ enum Oklch {
 // MARK: - Quiet Finance palette (light + dark aware)
 
 enum Ink {
-    static let bg        = DualColor(light: Oklch.srgb(0.985, 0.004, 85),  dark: Oklch.srgb(0.16,  0.008, 270))
-    static let bg2       = DualColor(light: Oklch.srgb(0.975, 0.005, 85),  dark: Oklch.srgb(0.185, 0.008, 270))
-    static let bgPanel   = DualColor(light: Color.white,                    dark: Oklch.srgb(0.205, 0.009, 270))
-    static let bgSunken  = DualColor(light: Oklch.srgb(0.965, 0.006, 85),  dark: Oklch.srgb(0.14,  0.008, 270))
+    static let bg       = DualColor(light: Oklch.srgb(0.985, 0.004, 85),  dark: Oklch.srgb(0.16,  0.008, 270),
+                                    modernLight: Color(red: 0.9686, green: 0.9725, blue: 0.9804),
+                                    modernDark:  Color(red: 0.0431, green: 0.0510, blue: 0.0667))
+    static let bg2      = DualColor(light: Oklch.srgb(0.975, 0.005, 85),  dark: Oklch.srgb(0.185, 0.008, 270),
+                                    modernLight: Color(red: 0.9333, green: 0.9412, blue: 0.9529),
+                                    modernDark:  Color(red: 0.0863, green: 0.0980, blue: 0.1216))
+    static let bgPanel  = DualColor(light: Color.white,                    dark: Oklch.srgb(0.205, 0.009, 270),
+                                    modernLight: Color.white,
+                                    modernDark:  Color(red: 0.1255, green: 0.1412, blue: 0.1725))
+    static let bgSunken = DualColor(light: Oklch.srgb(0.965, 0.006, 85),  dark: Oklch.srgb(0.14,  0.008, 270),
+                                    modernLight: Color(red: 0.9333, green: 0.9412, blue: 0.9529),
+                                    modernDark:  Color(red: 0.0863, green: 0.0980, blue: 0.1216))
 
-    static let line       = DualColor(light: Oklch.srgb(0.90, 0.006, 85),  dark: Oklch.srgb(0.28, 0.010, 270))
-    static let lineStrong = DualColor(light: Oklch.srgb(0.82, 0.008, 85),  dark: Oklch.srgb(0.36, 0.012, 270))
+    static let line      = DualColor(light: Oklch.srgb(0.90, 0.006, 85),  dark: Oklch.srgb(0.28, 0.010, 270),
+                                     modernLight: Color(red: 0.8941, green: 0.9020, blue: 0.9176),
+                                     modernDark:  Color(red: 0.1647, green: 0.1843, blue: 0.2196))
+    static let lineStrong = DualColor(light: Oklch.srgb(0.82, 0.008, 85), dark: Oklch.srgb(0.36, 0.012, 270),
+                                      modernLight: Color(red: 0.8118, green: 0.8275, blue: 0.8549),
+                                      modernDark:  Color(red: 0.2275, green: 0.2510, blue: 0.2863))
 
-    static let ink  = DualColor(light: Oklch.srgb(0.18, 0.010, 270), dark: Oklch.srgb(0.97, 0.004, 85))
-    static let ink2 = DualColor(light: Oklch.srgb(0.38, 0.012, 270), dark: Oklch.srgb(0.82, 0.006, 85))
-    static let ink3 = DualColor(light: Oklch.srgb(0.58, 0.010, 270), dark: Oklch.srgb(0.62, 0.008, 85))
-    static let ink4 = DualColor(light: Oklch.srgb(0.72, 0.008, 270), dark: Oklch.srgb(0.45, 0.010, 85))
+    static let ink  = DualColor(light: Oklch.srgb(0.18, 0.010, 270), dark: Oklch.srgb(0.97, 0.004, 85),
+                                modernLight: Color(red: 0.0549, green: 0.0667, blue: 0.0863),
+                                modernDark:  Color(red: 0.9490, green: 0.9529, blue: 0.9608))
+    static let ink2 = DualColor(light: Oklch.srgb(0.38, 0.012, 270), dark: Oklch.srgb(0.82, 0.006, 85),
+                                modernLight: Color(red: 0.2275, green: 0.2510, blue: 0.2863),
+                                modernDark:  Color(red: 0.7216, green: 0.7412, blue: 0.7765))
+    static let ink3 = DualColor(light: Oklch.srgb(0.58, 0.010, 270), dark: Oklch.srgb(0.62, 0.008, 85),
+                                modernLight: Color(red: 0.4235, green: 0.4510, blue: 0.4941),
+                                modernDark:  Color(red: 0.4235, green: 0.4510, blue: 0.4941))
+    static let ink4 = DualColor(light: Oklch.srgb(0.72, 0.008, 270), dark: Oklch.srgb(0.45, 0.010, 85),
+                                modernLight: Color(red: 0.6039, green: 0.6275, blue: 0.6667),
+                                modernDark:  Color(red: 0.6039, green: 0.6275, blue: 0.6667))
 
-    static let gain     = DualColor(light: Oklch.srgb(0.58, 0.13, 155), dark: Oklch.srgb(0.75, 0.15, 155))
-    static let gainSoft = DualColor(light: Oklch.srgb(0.92, 0.05, 155), dark: Oklch.srgb(0.30, 0.06, 155))
-    static let loss     = DualColor(light: Oklch.srgb(0.55, 0.17, 25),  dark: Oklch.srgb(0.72, 0.16, 25))
-    static let lossSoft = DualColor(light: Oklch.srgb(0.93, 0.05, 25),  dark: Oklch.srgb(0.30, 0.08, 25))
+    static let gain     = DualColor(light: Oklch.srgb(0.58, 0.13, 155), dark: Oklch.srgb(0.75, 0.15, 155),
+                                    modernLight: Color(red: 0.1216, green: 0.6157, blue: 0.4196),
+                                    modernDark:  Color(red: 0.1490, green: 0.7333, blue: 0.5020))
+    static let gainSoft = DualColor(light: Oklch.srgb(0.92, 0.05, 155), dark: Oklch.srgb(0.30, 0.06, 155),
+                                    modernLight: Color(red: 0.9020, green: 0.9608, blue: 0.9373),
+                                    modernDark:  Color(red: 0.0745, green: 0.2000, blue: 0.1490))
+    static let loss     = DualColor(light: Oklch.srgb(0.55, 0.17, 25),  dark: Oklch.srgb(0.72, 0.16, 25),
+                                    modernLight: Color(red: 0.7843, green: 0.2235, blue: 0.1843),
+                                    modernDark:  Color(red: 0.9098, green: 0.3608, blue: 0.3137))
+    static let lossSoft = DualColor(light: Oklch.srgb(0.93, 0.05, 25),  dark: Oklch.srgb(0.30, 0.08, 25),
+                                    modernLight: Color(red: 0.9882, green: 0.9098, blue: 0.9020),
+                                    modernDark:  Color(red: 0.2157, green: 0.0941, blue: 0.0980))
 
-    static let accent = DualColor(light: Oklch.srgb(0.45, 0.08, 250), dark: Oklch.srgb(0.75, 0.10, 250))
+    static let accent = DualColor(light: Oklch.srgb(0.45, 0.08, 250), dark: Oklch.srgb(0.75, 0.10, 250),
+                                  modernLight: Color(red: 0.1176, green: 0.5333, blue: 0.8980),
+                                  modernDark:  Color(red: 0.1176, green: 0.5333, blue: 0.8980))
 
     static let chart: [DualColor] = [
         // chart[0] — real estate: warm brown in dark (was near-white, clashed with text)
@@ -75,10 +105,16 @@ enum Ink {
 struct DualColor {
     let light: Color
     let dark: Color
+    var modernLight: Color? = nil
+    var modernDark: Color? = nil
     var color: Color {
         Color(nsColor: NSColor(name: nil) { appearance in
             let isDark = appearance.bestMatch(from: [.darkAqua, .vibrantDark, .accessibilityHighContrastDarkAqua, .accessibilityHighContrastVibrantDark]) != nil
-            return NSColor(isDark ? dark : light)
+            let useModern = UserDefaults.standard.bool(forKey: "useModernDesign")
+            if useModern, let ml = self.modernLight, let md = self.modernDark {
+                return NSColor(isDark ? md : ml)
+            }
+            return NSColor(isDark ? self.dark : self.light)
         })
     }
 }
@@ -115,7 +151,10 @@ enum Typo {
     static let serifIt = "InstrumentSerif-Italic"
 
     static func serifNum(_ size: CGFloat) -> Font {
-        .custom(serif, size: size).weight(.regular)
+        if UserDefaults.standard.bool(forKey: "useModernDesign") {
+            return .system(size: size, weight: .bold, design: .default)
+        }
+        return .custom(serif, size: size).weight(.regular)
     }
     static func mono(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         let name: String
@@ -138,7 +177,10 @@ enum Typo {
         return .custom(name, size: size)
     }
     static func serifItalic(_ size: CGFloat) -> Font {
-        .custom(serifIt, size: size)
+        if UserDefaults.standard.bool(forKey: "useModernDesign") {
+            return .system(size: size, weight: .regular, design: .default).italic()
+        }
+        return .custom(serifIt, size: size)
     }
 
     /// eyebrow: tiny uppercase mono label

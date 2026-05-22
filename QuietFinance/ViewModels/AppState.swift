@@ -57,6 +57,11 @@ final class AppState: ObservableObject {
     @AppStorage("dashboardWidgetOrder") var dashboardWidgetOrderRaw: String = ""
     @AppStorage("dashboardWidgetsHidden") var dashboardWidgetsHiddenRaw: String = ""
     @AppStorage("menuBarEnabled") var menuBarEnabled: Bool = false
+    @AppStorage("useModernDesign") private var _useModernDesign: Bool = true
+    var useModernDesign: Bool {
+        get { _useModernDesign }
+        set { _useModernDesign = newValue; objectWillChange.send() }
+    }
     /// Recent items stack: pipe-separated entries "kind|uuid|label". Newest first.
     @AppStorage("recentItems") var recentItemsRaw: String = ""
 
@@ -196,11 +201,5 @@ final class AppState: ObservableObject {
         set { byCategoryStyleRaw = newValue.rawValue; objectWillChange.send() }
     }
 
-    var preferredColorScheme: ColorScheme? {
-        switch theme {
-        case .system: return nil
-        case .light:  return .light
-        case .dark:   return .dark
-        }
-    }
 }
+

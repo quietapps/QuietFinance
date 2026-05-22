@@ -9,6 +9,36 @@ Version headings match **semver** derived from **`git log`** (newest-first). Xco
 
 ---
 
+## [3.0.0] - 2026-05-21
+
+### Added
+
+- **Keyboard-first snapshot creation** — Return advances focus to the next account field in the snapshot editor; hint text shows the shortcut. ⌘S saves draft without lifting hands from keyboard.
+- **Snapshot share card** — "Copy card" button in the snapshot editor header renders a branded PNG (net worth, delta pill, date) and copies it to the clipboard. Ready to paste into any chat or doc.
+- **Anomaly flag on Dashboard** — statistical outlier detection (≥2σ from trailing mean of consecutive % deltas). A banner on the hero widget surfaces unusual jumps or drops with the magnitude in sigmas.
+- **Year in review panel** — trailing-12-month summary sheet: net change + %, highest net worth snapshot, best and worst quarter, biggest mover account. Accessible from the Dashboard hero widget.
+- **Breakeven calculator in Goal panel** — when a goal target date is set, a "Monthly needed" stat shows the savings rate required to reach the goal by the deadline.
+- **Modern design system** — a refreshed visual layer built on the Quiet Apps design tokens (cool neutral palette, Quiet Blue `#1E88E5` accent, Geist Mono numerics, 14px card radius, layered shadows). New design is the default for all users; existing design is preserved as **Classic**.
+- **Design switcher in Settings** — Settings → App design lets users toggle between New and Classic with visual preview swatches and an "Active" badge. Switching is instant and does not affect any data or functionality.
+
+### Changed
+
+- **Classic icon redesigned and set as default** — new brand-blue gradient (#3D93D8→#0E4E8A) with ascending snapshot bars and a glow dot. All AppIcon sizes regenerated from source. Fresh installs and existing users who had Dusk migrate automatically; existing custom choices are preserved.
+- **Vault icon redesigned** — distinct dark ink gradient (#222436→#0B0D11) with a concentric arc / timeline motif. True n=5 superellipse, matches Quiet Apps icon standard.
+- **Strata icon redesigned** — distinct cool slate gradient (#23303F→#0D111A) with left-aligned horizontal allocation bars. True n=5 superellipse, matches Quiet Apps icon standard.
+- **All icons standardised** — switched from `CGPath(roundedRect:)` to a true parametric n=5 superellipse with 9% transparent safe-area ring, matching the Quiet Apps macOS 26 icon standard across Classic, Vault, and Strata.
+- **Settings layout** — display and UI panels (App design, Display, App icon, Dashboard widgets, Category colors, FX rate) on the left; system panels (Security, Reminders, Auto backup, Export, Import, Data) on the right. Both columns center-aligned in the content area.
+- **PDF export logo** — Dashboard PDF header now renders the current app icon instead of the legacy "L" placeholder glyph.
+- **Trajectory chart fill** — area fill in the net worth trajectory chart (Dashboard and Trends) uses Quiet Blue in modern mode and the ink color in classic mode, replacing the near-white slab that appeared in dark mode.
+
+### Fixed
+
+- SwiftUI "Publishing changes from within view updates" warning in Sidebar — selection binding now defers the mutation with `DispatchQueue.main.async`.
+- PDF export crash (`No ObservableObject of type AppState found`) — stealth mode modifier converted from `@EnvironmentObject` to `@Environment` key with a safe default; `ImageRenderer` isolation no longer triggers a fatal error.
+- Design switch crash when sheets were open — removed `.id(app.useModernDesign)` from the detail stack; design changes propagate through environment without destroying the view subtree.
+
+---
+
 ## [2.6.0] (1) - 2026-05-21
 
 ### Changed

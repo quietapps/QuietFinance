@@ -87,6 +87,8 @@ struct RootView: View {
         .frame(minWidth: 1000, minHeight: 640)
         .background(Color.lBg)
         .environment(\.compactMode, app.compactMode)
+        .environment(\.useModernDesign, app.useModernDesign)
+        .environment(\.stealthMode, app.stealthMode)
         .overlay(alignment: .bottom) { UndoToast() }
         .focusedSceneValue(\.appState, app)
         .focusedSceneValue(\.undoStash, undo)

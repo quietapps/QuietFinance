@@ -37,18 +37,21 @@ extension EnvironmentValues {
 struct Panel<Content: View>: View {
     var padding: CGFloat = 0
     let content: () -> Content
+    @Environment(\.useModernDesign) private var modern
     init(padding: CGFloat = 0, @ViewBuilder _ content: @escaping () -> Content) {
         self.padding = padding
         self.content = content
     }
     var body: some View {
+        let r: CGFloat = modern ? 14 : 12
         content()
             .padding(padding)
             .background(Color.lPanel)
             .overlay(
-                RoundedRectangle(cornerRadius: 12).stroke(Color.lLine, lineWidth: 1)
+                RoundedRectangle(cornerRadius: r).stroke(Color.lLine, lineWidth: modern ? 0.5 : 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: r))
+            .shadow(color: modern ? Color.black.opacity(0.06) : Color.clear, radius: 4, x: 0, y: 2)
     }
 }
 
@@ -292,8 +295,10 @@ struct KPICard: View {
     var valueColor: Color = .lInk
     var deltaText: String? = nil
     var deltaUp: Bool = true
+    @Environment(\.useModernDesign) private var modern
 
     var body: some View {
+        let r: CGFloat = modern ? 14 : 12
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(Typo.eyebrow)
@@ -320,10 +325,11 @@ struct KPICard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
+        .padding(modern ? 20 : 18)
         .background(Color.lPanel)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.lLine, lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: r).stroke(Color.lLine, lineWidth: modern ? 0.5 : 1))
+        .clipShape(RoundedRectangle(cornerRadius: r))
+        .shadow(color: modern ? Color.black.opacity(0.06) : .clear, radius: 4, x: 0, y: 2)
     }
 }
 
@@ -468,15 +474,19 @@ struct Avatar: View {
 struct Pill: View {
     let text: String
     var emphasis: Bool = false
+    @Environment(\.useModernDesign) private var modern
     var body: some View {
-        Text(text)
+        let r: CGFloat = modern ? 6 : 999
+        let emphBg: Color = modern ? Color.lAccent : Color.lInk
+        let emphFg: Color = Color.white
+        return Text(text)
             .font(Typo.mono(10.5, weight: .medium))
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
-            .background(emphasis ? Color.lInk : Color.clear)
-            .foregroundStyle(emphasis ? Color.lPanel : Color.lInk2)
-            .overlay(Capsule().stroke(emphasis ? Color.lInk : Color.lLine, lineWidth: 1))
-            .clipShape(Capsule())
+            .background(emphasis ? emphBg : Color.clear)
+            .foregroundStyle(emphasis ? emphFg : Color.lInk2)
+            .overlay(RoundedRectangle(cornerRadius: r).stroke(emphasis ? emphBg : Color.lLine, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: r))
     }
 }
 
@@ -503,19 +513,23 @@ struct RateChip: View {
 struct SegControl<T: Hashable>: View {
     let options: [(label: String, value: T)]
     @Binding var selection: T
+    @Environment(\.useModernDesign) private var modern
 
     var body: some View {
-        HStack(spacing: 0) {
+        let selBg: Color  = modern ? Color.lAccent : Color.lInk
+        let selFg: Color  = modern ? Color.white : Color.lBg
+        let r: CGFloat    = modern ? 8 : 999
+        return HStack(spacing: 0) {
             ForEach(Array(options.enumerated()), id: \.offset) { idx, opt in
                 Button {
                     selection = opt.value
                 } label: {
                     Text(opt.label)
                         .font(Typo.mono(10.5, weight: .semibold))
-                        .foregroundStyle(selection == opt.value ? Color.lPanel : Color.lInk2)
+                        .foregroundStyle(selection == opt.value ? selFg : Color.lInk2)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(selection == opt.value ? Color.lInk : Color.lPanel.opacity(0.001))
+                        .background(selection == opt.value ? selBg : Color.lPanel.opacity(0.001))
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -526,8 +540,8 @@ struct SegControl<T: Hashable>: View {
             }
         }
         .fixedSize(horizontal: false, vertical: true)
-        .overlay(Capsule().stroke(Color.lLine, lineWidth: 1))
-        .clipShape(Capsule())
+        .overlay(RoundedRectangle(cornerRadius: r).stroke(Color.lLine, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: r))
     }
 }
 
@@ -536,21 +550,35 @@ struct SegControl<T: Hashable>: View {
 struct PrimaryButton<Label: View>: View {
     let action: () -> Void
     let label: () -> Label
+    @Environment(\.useModernDesign) private var modern
     init(action: @escaping () -> Void, @ViewBuilder label: @escaping () -> Label) {
         self.action = action; self.label = label
     }
     var body: some View {
         Button(action: action) {
-            label()
-                .font(Typo.sans(12, weight: .semibold))
-                .foregroundStyle(Color.lPanel)
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background(Color.lInk)
-                .clipShape(Capsule())
-                .contentShape(Capsule())
+            if modern {
+                label()
+                    .font(Typo.sans(12, weight: .semibold))
+                    .foregroundStyle(Color.white)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(Color.lAccent)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .contentShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                label()
+                    .font(Typo.sans(12, weight: .semibold))
+                    .foregroundStyle(Color.lPanel)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(Color.lInk)
+                    .clipShape(Capsule())
+                    .contentShape(Capsule())
+            }
         }
         .buttonStyle(.plain)
         .pointerStyle(.link)
@@ -560,21 +588,35 @@ struct PrimaryButton<Label: View>: View {
 struct GhostButton<Label: View>: View {
     let action: () -> Void
     let label: () -> Label
+    @Environment(\.useModernDesign) private var modern
     init(action: @escaping () -> Void, @ViewBuilder label: @escaping () -> Label) {
         self.action = action; self.label = label
     }
     var body: some View {
         Button(action: action) {
-            label()
-                .font(Typo.sans(12, weight: .medium))
-                .foregroundStyle(Color.lInk)
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.lPanel.opacity(0.001))
-                .overlay(Capsule().stroke(Color.lLine, lineWidth: 1))
-                .contentShape(Capsule())
+            if modern {
+                label()
+                    .font(Typo.sans(12, weight: .medium))
+                    .foregroundStyle(Color.lAccent)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.lPanel.opacity(0.001))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.lAccent.opacity(0.5), lineWidth: 1))
+                    .contentShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                label()
+                    .font(Typo.sans(12, weight: .medium))
+                    .foregroundStyle(Color.lInk)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.lPanel.opacity(0.001))
+                    .overlay(Capsule().stroke(Color.lLine, lineWidth: 1))
+                    .contentShape(Capsule())
+            }
         }
         .buttonStyle(.plain)
         .pointerStyle(.link)
@@ -584,15 +626,19 @@ struct GhostButton<Label: View>: View {
 struct IconButton: View {
     let systemName: String
     let action: () -> Void
+    @Environment(\.useModernDesign) private var modern
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(Color.lInk2)
+                .foregroundStyle(modern ? Color.lAccent : Color.lInk2)
                 .frame(width: 28, height: 28)
                 .background(Color.lPanel.opacity(0.001))
-                .overlay(Circle().stroke(Color.lLine, lineWidth: 1))
-                .contentShape(Circle())
+                .overlay(
+                    RoundedRectangle(cornerRadius: modern ? 7 : 999)
+                        .stroke(modern ? Color.lAccent.opacity(0.4) : Color.lLine, lineWidth: 1)
+                )
+                .contentShape(RoundedRectangle(cornerRadius: modern ? 7 : 999))
         }
         .buttonStyle(.plain)
         .pointerStyle(.link)

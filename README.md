@@ -58,8 +58,10 @@ Every finance app wants your bank login, a monthly fee, or both. Quiet Finance w
 
 ### Dashboard
 - Hero net worth with embedded sparkline and inline delta chip
+- **Anomaly flag** — statistical outlier detection surfaces unusual jumps or drops (≥2σ) inline on the hero widget
+- **Year in review** — trailing-12-month panel: net change, best/worst quarter, highest balance, biggest mover account
 - Compare bar (vs Previous / Year ago)
-- Customizable widgets: Goal progress + ETA, Liquidity / runway, KPI cards, allocation breakdowns, movers, history
+- Customizable widgets: **Goal progress + ETA + monthly breakeven**, Liquidity / runway, KPI cards, allocation breakdowns, movers, history
 - **Watchlist** of pinned accounts surfaced inline
 
 ### Allocation & Trends
@@ -68,6 +70,8 @@ Every finance app wants your bank login, a monthly fee, or both. Quiet Finance w
 
 ### Snapshots
 - Create, lock/unlock, edit per-account values with live totals and deltas
+- **Keyboard-first editing** — Return advances field-to-field; ⌘S saves draft without mouse
+- **Share card** — one click copies a branded PNG card (net worth, delta, date) to the clipboard
 - Completeness badge, pinned snapshot tabs, missing-row highlights, stale-account flag
 - **Diff** (`⌘⇧D`) — compare two dates with a **Money Flow** Sankey visual of where value moved
 
@@ -91,6 +95,10 @@ Every finance app wants your bank login, a monthly fee, or both. Quiet Finance w
 - **Stealth mode** — blurs all amounts when active
 - **Menu bar item** for quick access without exposing the main window
 
+### Design
+- **Modern design** (default) — Quiet Apps design tokens: cool neutral palette, Quiet Blue accent, Geist Mono numerics, 14px card radius, layered shadows. Both Light and Dark Mode fully supported.
+- **Classic design** — the original familiar interface, always available. Switch any time in Settings → App design with no data impact.
+
 ### Productivity
 - **⌘K command palette** for instant navigation
 - **Recently viewed** list with dimmed deleted entries
@@ -98,7 +106,17 @@ Every finance app wants your bank login, a monthly fee, or both. Quiet Finance w
 - Three-level breadcrumb and search that jumps directly into editors
 
 ### App icon picker
-Settings → **App icon** — choose from Quiet Finance, Classic, Vault, or Strata. Switches the Dock + App Switcher icon live.
+Settings → **App icon** — choose from five icons. Switches the Dock + App Switcher icon live.
+
+| Icon | Description |
+|------|-------------|
+| **Classic** *(default)* | Snapshot bars ascending on brand blue — Quiet Apps blue gradient (#3D93D8 → #0E4E8A) |
+| **Dusk** | Ledger bars on warm dusk background |
+| **Quiet Finance** | Primary wordmark icon |
+| **Vault** | Concentric timeline arcs on dark ink (#222436 → #0B0D11) |
+| **Strata** | Left-aligned allocation bars on cool slate (#23303F → #0D111A) |
+
+All icons follow the Quiet Apps macOS icon standard: true n=5 superellipse (not rounded rect), 9% transparent safe-area ring on a 1024×1024 canvas so the Dock composites correct visual weight.
 
 ### FX
 Live **USD↔INR** fetch via [frankfurter.app](https://www.frankfurter.app/) (no API key required). Rates are pinned per snapshot; locked snapshots are never rewritten.

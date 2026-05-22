@@ -1,6 +1,6 @@
 cask "quietfinance" do
-  version "2.6.0"
-  sha256 "e3e27b49e8ad24a57817e38aa16396086a976169759271aca34ae133f3a4e5df"
+  version "3.0.0"
+  sha256 "0d02cdfe1875db6e8d37089f92db6fa0c31aa48051c3d14ff687ff54d7943042"
 
   url "https://github.com/quietapps/QuietFinance/releases/download/v#{version}/QuietFinance-#{version}.zip",
       verified: "github.com/quietapps/QuietFinance/"

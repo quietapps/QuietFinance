@@ -60,7 +60,6 @@ struct QuietFinanceApp: App {
                     .environmentObject(app)
                     .environmentObject(undo)
                     .environmentObject(lockGate)
-                    .preferredColorScheme(app.preferredColorScheme)
                     .onChange(of: app.theme) { _, newTheme in
                         applyWindowAppearance(newTheme)
                     }
@@ -110,10 +109,8 @@ struct QuietFinanceApp: App {
             case .dark:   return NSAppearance(named: .darkAqua)
             }
         }()
-        DispatchQueue.main.async {
-            for window in NSApp.windows {
-                window.appearance = appearance
-            }
+        for window in NSApp.windows {
+            window.appearance = appearance
         }
     }
 }

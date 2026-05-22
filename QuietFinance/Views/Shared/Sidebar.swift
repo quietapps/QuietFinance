@@ -4,6 +4,7 @@ import Combine
 
 struct Sidebar: View {
     @EnvironmentObject var app: AppState
+    @Environment(\.useModernDesign) private var modern
     @Query private var liveAccounts: [Account]
     @Query private var liveSnapshots: [Snapshot]
     @Query private var livePeople: [Person]
@@ -51,7 +52,7 @@ struct Sidebar: View {
     private var selection: Binding<Screen?> {
         Binding(
             get: { app.selectedScreen },
-            set: { if let v = $0 { app.selectedScreen = v } }
+            set: { if let v = $0 { DispatchQueue.main.async { app.selectedScreen = v } } }
         )
     }
 
@@ -108,6 +109,7 @@ struct Sidebar: View {
             }
         }
         .listStyle(.sidebar)
+        .tint(modern ? Color.lAccent : nil)
     }
 
     // MARK: Icon-only
@@ -141,15 +143,15 @@ struct Sidebar: View {
         } label: {
             Image(systemName: item.icon)
                 .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(active ? Color.lInk : Color.lInk3)
+                .foregroundStyle(active ? (modern ? Color.lAccent : Color.lInk) : Color.lInk3)
                 .frame(width: 30, height: 30)
                 .background(
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(active ? Color.lInk.opacity(0.10) : Color.clear)
+                        .fill(active ? (modern ? Color.lAccent.opacity(0.12) : Color.lInk.opacity(0.10)) : Color.clear)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 6)
-                        .stroke(active ? Color.lLine : Color.clear, lineWidth: 1)
+                        .stroke(active ? (modern ? Color.lAccent.opacity(0.35) : Color.lLine) : Color.clear, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)

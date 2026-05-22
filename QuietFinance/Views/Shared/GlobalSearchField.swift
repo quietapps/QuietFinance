@@ -3,6 +3,7 @@ import SwiftData
 
 struct GlobalSearchField: View {
     @EnvironmentObject var app: AppState
+    @Environment(\.useModernDesign) private var modern
     @Query(sort: \Account.name)  private var accounts: [Account]
     @Query(sort: \Person.name)   private var people: [Person]
     @Query(sort: \Country.name)  private var countries: [Country]
@@ -91,14 +92,17 @@ struct GlobalSearchField: View {
                     .font(Typo.mono(9, weight: .medium))
                     .foregroundStyle(Color.lInk3)
                     .padding(.horizontal, 4)
-                    .overlay(Capsule().stroke(Color.lLine, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: modern ? 4 : 999).stroke(Color.lLine, lineWidth: 1))
             }
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 5)
         .background(Color.lSunken.opacity(0.6))
-        .overlay(Capsule().stroke(focused ? Color.lInk.opacity(0.35) : Color.lLine, lineWidth: 1))
-        .clipShape(Capsule())
+        .overlay(
+            RoundedRectangle(cornerRadius: modern ? 9 : 999)
+                .stroke(focused ? (modern ? Color.lAccent : Color.lInk.opacity(0.35)) : Color.lLine, lineWidth: modern ? 1.5 : 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: modern ? 9 : 999))
         .onChange(of: app.globalSearchFocusTick) { _, _ in focused = true }
         .onChange(of: focused) { _, newVal in showResults = newVal && !query.isEmpty }
         .onChange(of: query) { _, newVal in showResults = focused && !newVal.isEmpty }
@@ -107,9 +111,9 @@ struct GlobalSearchField: View {
                 resultsList
                     .frame(width: 520)
                     .background(Color.lPanel)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lLine, lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .shadow(color: .black.opacity(0.22), radius: 16, y: 6)
+                    .overlay(RoundedRectangle(cornerRadius: modern ? 14 : 10).stroke(Color.lLine, lineWidth: modern ? 0.5 : 1))
+                    .clipShape(RoundedRectangle(cornerRadius: modern ? 14 : 10))
+                    .shadow(color: .black.opacity(modern ? 0.12 : 0.22), radius: modern ? 20 : 16, y: 6)
                     .offset(y: 36)
                     .zIndex(999)
             }
@@ -142,7 +146,7 @@ struct GlobalSearchField: View {
                     ForEach(Array(r.enumerated()), id: \.element.id) { idx, res in
                         Button { open(res) } label: {
                             HStack(spacing: 12) {
-                                RoundedRectangle(cornerRadius: 3)
+                                RoundedRectangle(cornerRadius: modern ? 5 : 3)
                                     .fill(res.color)
                                     .frame(width: 10, height: 10)
                                 VStack(alignment: .leading, spacing: 2) {
@@ -160,7 +164,7 @@ struct GlobalSearchField: View {
                                     .font(Typo.eyebrow).tracking(1.2)
                                     .foregroundStyle(Color.lInk3)
                                     .padding(.horizontal, 6).padding(.vertical, 2)
-                                    .overlay(Capsule().stroke(Color.lLine, lineWidth: 1))
+                                    .overlay(RoundedRectangle(cornerRadius: modern ? 4 : 999).stroke(modern ? Color.lAccent.opacity(0.4) : Color.lLine, lineWidth: 1))
                             }
                             .padding(.horizontal, 14).padding(.vertical, 11)
                             .contentShape(Rectangle())

@@ -14,7 +14,8 @@ enum DashboardPDFExporter {
         snapshots: [Snapshot],
         displayCurrency: Currency,
         activeSnapshotID: UUID?,
-        theme: AppTheme
+        theme: AppTheme,
+        appIconAssetName: String = "IconClassic"
     ) -> Result {
         let scheme = resolveScheme(theme)
         let appearance: NSAppearance = (scheme == .dark)
@@ -24,7 +25,9 @@ enum DashboardPDFExporter {
         let view = DashboardExportView(
             snapshots: snapshots,
             displayCurrency: displayCurrency,
-            activeSnapshotID: activeSnapshotID
+            activeSnapshotID: activeSnapshotID,
+            appIconAssetName: appIconAssetName,
+            generatedAt: Date()
         )
         .environment(\.colorScheme, scheme)
 

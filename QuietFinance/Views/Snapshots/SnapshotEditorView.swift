@@ -18,6 +18,7 @@ struct SnapshotEditorView: View {
     @State private var showSavedToast = false
     @State private var saveError: String?
     @State private var sanityWarning: SanityWarning?
+    @FocusState private var focusedValueID: UUID?
 
     private struct SanityWarning: Identifiable {
         let id = UUID()
@@ -215,7 +216,28 @@ struct SnapshotEditorView: View {
                         .foregroundStyle(Color.lInk3)
                 }
                 Spacer()
-                rateBlock
+                VStack(alignment: .trailing, spacing: 10) {
+                    rateBlock
+                    Button {
+                        SnapshotShareCard.copyToClipboard(
+                            snapshot: snapshot,
+                            prevTotal: previousTotalDisplay,
+                            displayCurrency: app.displayCurrency,
+                            includeIlliquid: app.includeIlliquidInNetWorth
+                        )
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 11))
+                            Text("Copy card")
+                                .font(Typo.sans(11))
+                        }
+                        .foregroundStyle(Color.lInk3)
+                    }
+                    .buttonStyle(.plain)
+                    .pointerStyle(.link)
+                    .help("Copy net worth share card to clipboard as image")
+                }
             }
             if let err = fetchError {
                 Text(err)
@@ -317,10 +339,24 @@ struct SnapshotEditorView: View {
         }
     }
 
+    private func advanceFocus(from id: UUID) {
+        let ids = sortedValues.map(\.id)
+        guard let i = ids.firstIndex(of: id) else { return }
+        focusedValueID = i + 1 < ids.count ? ids[i + 1] : nil
+    }
+
     private var valuesPanel: some View {
         Panel {
             VStack(spacing: 0) {
                 PanelHead(title: "Account values", meta: "\(sortedValues.count) rows")
+                if !snapshot.isLocked {
+                    Text("Return advances to the next field  ·  ⌘S saves draft")
+                        .font(Typo.sans(10.5))
+                        .foregroundStyle(Color.lInk3)
+                        .padding(.horizontal, 18).padding(.vertical, 6)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.lSunken.opacity(0.6))
+                }
                 rowHeader
                 let values = sortedValues
                 ForEach(Array(values.enumerated()), id: \.element.id) { idx, v in
@@ -417,6 +453,8 @@ struct SnapshotEditorView: View {
                     .multilineTextAlignment(.trailing)
                     .font(Typo.mono(13))
                     .frame(width: 170)
+                    .focused($focusedValueID, equals: v.id)
+                    .onSubmit { advanceFocus(from: v.id) }
                     Text(ccy.rawValue)
                         .font(Typo.mono(10, weight: .medium))
                         .foregroundStyle(Color.lInk3)

@@ -299,7 +299,8 @@ struct TrendsView: View {
     }
 
     private var totalChart: some View {
-        Chart {
+        let chartColor = app.useModernDesign ? Color.lAccent : Color.lInk
+        return Chart {
             ForEach(cachedSnapshotTotals) { p in
                 AreaMark(
                     x: .value("Date", p.date),
@@ -307,7 +308,7 @@ struct TrendsView: View {
                 )
                 .interpolationMethod(.catmullRom)
                 .foregroundStyle(.linearGradient(
-                    colors: [Color.lInk.opacity(0.18), Color.lInk.opacity(0.02)],
+                    colors: [chartColor.opacity(0.18), chartColor.opacity(0.02)],
                     startPoint: .top, endPoint: .bottom
                 ))
                 LineMark(
@@ -315,7 +316,7 @@ struct TrendsView: View {
                     y: .value("Val", p.total)
                 )
                 .interpolationMethod(.catmullRom)
-                .foregroundStyle(Color.lInk)
+                .foregroundStyle(chartColor)
                 .lineStyle(StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round))
                 PointMark(
                     x: .value("Date", p.date),
@@ -435,13 +436,14 @@ struct TrendsView: View {
 
     @ViewBuilder
     private func forecastChart(_ r: Forecast.Result) -> some View {
+        let chartColor = app.useModernDesign ? Color.lAccent : Color.lInk
         Chart {
             // Confidence band on projection
             ForEach(r.projection) { p in
                 AreaMark(x: .value("Date", p.date),
                          yStart: .value("Lower", p.lower),
                          yEnd: .value("Upper", p.upper))
-                    .foregroundStyle(Color.lInk.opacity(0.10))
+                    .foregroundStyle(chartColor.opacity(0.10))
                     .interpolationMethod(.monotone)
             }
             // Historical actuals

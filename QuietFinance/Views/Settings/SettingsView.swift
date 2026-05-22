@@ -38,19 +38,19 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .center, spacing: 20) {
             PageHero(eyebrow: "SYSTEM · PREFERENCES",
                      title: "Settings",
                      titleItalic: "— configuration")
 
             HStack(alignment: .top, spacing: 18) {
                 VStack(spacing: 18) {
+                    designPanel
                     displayPanel
                     appIconPanel
                     dashboardWidgetsPanel
                     categoryColorsPanel
                     fxRatePanel
-                    dataPanel
                 }
                 .frame(maxWidth: .infinity, alignment: .top)
 
@@ -60,11 +60,13 @@ struct SettingsView: View {
                     autoBackupPanel
                     exportPanel
                     importPanel
+                    dataPanel
                 }
                 .frame(maxWidth: .infinity, alignment: .top)
             }
         }
-        .frame(maxWidth: 980, alignment: .leading)
+        .frame(maxWidth: 980, alignment: .center)
+        .frame(maxWidth: .infinity, alignment: .top)
         .task { await backupsCache.loadIfNeeded() }
         .task(id: backupsTick) {
             guard backupsTick > 0 else { return }
@@ -454,7 +456,7 @@ struct SettingsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(selected ? Color.lInk : Color.lLine,
+                            .stroke(selected ? (app.useModernDesign ? Color.lAccent : Color.lInk) : Color.lLine,
                                     lineWidth: selected ? 2 : 1)
                     )
                 VStack(spacing: 1) {
@@ -484,6 +486,76 @@ struct SettingsView: View {
                 }
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
+            .background(Color.lPanel.opacity(0.001))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .pointerStyle(.link)
+    }
+
+    private var designPanel: some View {
+        Panel {
+            VStack(alignment: .leading, spacing: 0) {
+                PanelHead(title: "App design", meta: "Visual style")
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("Choose the visual style. Classic preserves the original design.")
+                        .font(Typo.sans(11))
+                        .foregroundStyle(Color.lInk3)
+                    HStack(spacing: 12) {
+                        designOptionCard(isModern: true, title: "Modern", subtitle: "New Quiet Apps style")
+                        designOptionCard(isModern: false, title: "Classic", subtitle: "Original design")
+                        Spacer(minLength: 0)
+                    }
+                }
+                .padding(.horizontal, 18).padding(.vertical, 14)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func designOptionCard(isModern: Bool, title: String, subtitle: String) -> some View {
+        let selected = app.useModernDesign == isModern
+        Button {
+            app.useModernDesign = isModern
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 4) {
+                    RoundedRectangle(cornerRadius: isModern ? 5 : 3)
+                        .fill(isModern ? Color.lAccent : Color.lInk)
+                        .frame(width: 32, height: 20)
+                    VStack(spacing: 3) {
+                        RoundedRectangle(cornerRadius: 1)
+                            .fill(Color.lInk.opacity(0.15))
+                            .frame(width: 36, height: 4)
+                        RoundedRectangle(cornerRadius: 1)
+                            .fill(Color.lInk.opacity(0.10))
+                            .frame(width: 28, height: 4)
+                    }
+                }
+                .padding(10)
+                .background(Color.lBg)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(selected ? Color.lAccent : Color.lLine, lineWidth: selected ? 1.5 : 1))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(Typo.sans(12, weight: .semibold))
+                        .foregroundStyle(Color.lInk)
+                    Text(subtitle)
+                        .font(Typo.sans(10.5))
+                        .foregroundStyle(Color.lInk3)
+                }
+                if selected {
+                    HStack(spacing: 3) {
+                        Image(systemName: "checkmark.circle.fill").font(.system(size: 9))
+                        Text("Active").font(Typo.eyebrow).tracking(1.2).lineLimit(1)
+                    }
+                    .foregroundStyle(Color.lGain)
+                } else {
+                    Text(" ").font(Typo.eyebrow)
+                }
+            }
+            .frame(width: 100)
+            .padding(.horizontal, 8).padding(.vertical, 8)
             .background(Color.lPanel.opacity(0.001))
             .contentShape(Rectangle())
         }

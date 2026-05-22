@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 
 struct TopBar: View {
     @EnvironmentObject var app: AppState
+    @Environment(\.useModernDesign) private var modern
     @Query(sort: \Snapshot.date, order: .reverse) private var snapshots: [Snapshot]
     @Query(sort: \Account.name) private var accounts: [Account]
     @State private var showingNewSnapshot = false
@@ -50,9 +51,12 @@ struct TopBar: View {
             } label: {
                 Image(systemName: "square.and.arrow.up")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.lInk2)
+                    .foregroundStyle(modern ? Color.lAccent : Color.lInk2)
                     .frame(width: 28, height: 28)
-                    .overlay(Circle().stroke(Color.lLine, lineWidth: 1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: modern ? 7 : 999)
+                            .stroke(modern ? Color.lAccent.opacity(0.4) : Color.lLine, lineWidth: 1)
+                    )
             }
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)
@@ -151,7 +155,7 @@ struct TopBar: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .overlay(Capsule().stroke(Color.lLine, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: modern ? 8 : 999).stroke(Color.lLine, lineWidth: 1))
             .help("Create a snapshot to start tracking.")
         } else {
             HStack(spacing: 6) {
@@ -182,8 +186,8 @@ struct TopBar: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(Capsule().fill(Color.lInk.opacity(0.04)))
-            .overlay(Capsule().stroke(Color.lLine, lineWidth: 1))
+            .background(RoundedRectangle(cornerRadius: modern ? 8 : 999).fill(Color.lInk.opacity(0.04)))
+            .overlay(RoundedRectangle(cornerRadius: modern ? 8 : 999).stroke(Color.lLine, lineWidth: 1))
             .help("Active snapshot — drives Dashboard, Breakdown, Trends. Click to switch.")
         }
     }
@@ -241,7 +245,8 @@ struct TopBar: View {
             snapshots: Array(snapshots),
             displayCurrency: app.displayCurrency,
             activeSnapshotID: app.activeSnapshotID,
-            theme: app.theme
+            theme: app.theme,
+            appIconAssetName: app.appIconChoice.assetName
         )
     }
 }

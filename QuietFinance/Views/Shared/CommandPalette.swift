@@ -7,6 +7,7 @@ import SwiftData
 struct CommandPalette: View {
     @EnvironmentObject var app: AppState
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.useModernDesign) private var modern
     @Query(sort: \Snapshot.date, order: .reverse) private var snapshots: [Snapshot]
     @Query(sort: \Account.name) private var accounts: [Account]
     @Query(sort: \Person.name) private var people: [Person]
@@ -123,7 +124,7 @@ struct CommandPalette: View {
                     .font(Typo.mono(9, weight: .medium))
                     .foregroundStyle(Color.lInk3)
                     .padding(.horizontal, 5).padding(.vertical, 1)
-                    .overlay(Capsule().stroke(Color.lLine, lineWidth: 1))
+                    .overlay(RoundedRectangle(cornerRadius: modern ? 4 : 999).stroke(Color.lLine, lineWidth: 1))
             }
             .padding(.horizontal, 16).padding(.vertical, 14)
             Divider().overlay(Color.lLine)
@@ -167,9 +168,9 @@ struct CommandPalette: View {
         }
         .frame(width: 640)
         .background(Color.lPanel)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.lLine, lineWidth: 1))
-        .shadow(color: .black.opacity(0.35), radius: 24, y: 10)
+        .clipShape(RoundedRectangle(cornerRadius: modern ? 16 : 12))
+        .overlay(RoundedRectangle(cornerRadius: modern ? 16 : 12).stroke(Color.lLine, lineWidth: modern ? 0.5 : 1))
+        .shadow(color: .black.opacity(modern ? 0.18 : 0.35), radius: modern ? 32 : 24, y: 10)
         .onAppear { focused = true }
         .onChange(of: query) { _, _ in selection = 0 }
         .background(
@@ -208,7 +209,7 @@ struct CommandPalette: View {
         HStack(spacing: 12) {
             Image(systemName: item.icon)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(active ? Color.lInk : Color.lInk3)
+                .foregroundStyle(active ? (modern ? Color.lAccent : Color.lInk) : Color.lInk3)
                 .frame(width: 18)
             VStack(alignment: .leading, spacing: 1) {
                 Text(item.title)
@@ -226,7 +227,7 @@ struct CommandPalette: View {
                 .foregroundStyle(Color.lInk4)
         }
         .padding(.horizontal, 16).padding(.vertical, 9)
-        .background(active ? Color.lInk.opacity(0.08) : Color.clear)
+        .background(active ? (modern ? Color.lAccent.opacity(0.10) : Color.lInk.opacity(0.08)) : Color.clear)
         .contentShape(Rectangle())
     }
 
@@ -236,6 +237,6 @@ struct CommandPalette: View {
             .font(Typo.mono(9, weight: .medium))
             .foregroundStyle(Color.lInk3)
             .padding(.horizontal, 4).padding(.vertical, 1)
-            .overlay(Capsule().stroke(Color.lLine, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: modern ? 4 : 999).stroke(Color.lLine, lineWidth: 1))
     }
 }

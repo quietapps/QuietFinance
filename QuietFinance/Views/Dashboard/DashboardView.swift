@@ -33,6 +33,14 @@ struct DashboardView: View {
     @State private var cachedTargets: [AssetCategory: Double] = [:]
     @State private var showingTargets: Bool = false
     @State private var cachedLiabilities: [LiabilityRow] = []
+    @State private var cachedAnomaly: AnomalyFlag? = nil
+    @State private var showingYearInReview: Bool = false
+
+    struct AnomalyFlag {
+        let isGain: Bool
+        let deltaPct: Double  // magnitude of current delta as % of previous
+        let sigmas: Double    // how many σ above mean
+    }
 
     private struct LiabilityRow: Identifiable {
         let id: UUID
@@ -158,6 +166,28 @@ struct DashboardView: View {
         cachedTrajectory = sortedAsc.map { TrajectoryPoint(date: $0.date, val: total($0, target: target)) }
         cachedTargets = TargetAllocationStore.all()
         cachedLiabilities = computeLiabilities(cur: cur, prev: prev, target: target)
+        cachedAnomaly = computeAnomaly(target: target)
+    }
+
+    private func computeAnomaly(target: Currency) -> AnomalyFlag? {
+        let asc = sortedAsc
+        guard asc.count >= 3 else { return nil }
+        // Compute all consecutive % deltas
+        var deltas: [Double] = []
+        for i in 1..<asc.count {
+            let prev = total(asc[i - 1], target: target)
+            let cur  = total(asc[i],     target: target)
+            guard prev != 0 else { continue }
+            deltas.append((cur - prev) / abs(prev))
+        }
+        guard deltas.count >= 2 else { return nil }
+        let mean = deltas.reduce(0, +) / Double(deltas.count)
+        let variance = deltas.map { ($0 - mean) * ($0 - mean) }.reduce(0, +) / Double(deltas.count)
+        let stdev = variance.squareRoot()
+        guard stdev > 0, let lastDelta = deltas.last else { return nil }
+        let sigmas = abs(lastDelta - mean) / stdev
+        guard sigmas >= 2.0 else { return nil }
+        return AnomalyFlag(isGain: lastDelta > mean, deltaPct: abs(lastDelta) * 100, sigmas: sigmas)
     }
 
     private func computeLiabilities(cur: Snapshot?, prev: Snapshot?, target: Currency) -> [LiabilityRow] {
@@ -386,11 +416,63 @@ struct DashboardView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+
+            if let flag = cachedAnomaly {
+                anomalyBanner(flag)
+            }
+
+            HStack {
+                Spacer()
+                Button {
+                    showingYearInReview = true
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "calendar.badge.clock")
+                            .font(.system(size: 10))
+                        Text("Year in review")
+                            .font(Typo.sans(11))
+                    }
+                    .foregroundStyle(Color.lInk3)
+                }
+                .buttonStyle(.plain)
+                .pointerStyle(.link)
+                .disabled(snapshots.count < 2)
+                .opacity(snapshots.count < 2 ? 0.4 : 1)
+            }
         }
         .padding(24)
         .background(Color.lPanel)
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.lLine, lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 14))
+        .sheet(isPresented: $showingYearInReview) {
+            YearInReviewSheet(snapshots: Array(snapshots),
+                              displayCurrency: app.displayCurrency,
+                              includeIlliquid: app.includeIlliquidInNetWorth)
+        }
+    }
+
+    @ViewBuilder
+    private func anomalyBanner(_ flag: AnomalyFlag) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: flag.isGain ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill")
+                .font(.system(size: 14))
+                .foregroundStyle(flag.isGain ? Color.lGain : Color.lLoss)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(flag.isGain ? "Unusual gain this period" : "Unusual drop this period")
+                    .font(Typo.sans(12, weight: .semibold))
+                    .foregroundStyle(Color.lInk)
+                Text(String(format: "%.1f%% change — %.1fσ from your historical average. Worth a second look.", flag.deltaPct, flag.sigmas))
+                    .font(Typo.sans(11))
+                    .foregroundStyle(Color.lInk3)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .background((flag.isGain ? Color.lGainSoft : Color.lLossSoft).opacity(0.35))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(
+            (flag.isGain ? Color.lGain : Color.lLoss).opacity(0.25), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.top, 8)
     }
 
     @ViewBuilder
@@ -449,14 +531,15 @@ struct DashboardView: View {
 
     @ViewBuilder
     private var embeddedSparkline: some View {
+        let chartColor = app.useModernDesign ? Color.lAccent : Color.lInk
         Chart(cachedTrajectory) { pt in
             AreaMark(x: .value("Date", pt.date), y: .value("Val", pt.val))
                 .foregroundStyle(.linearGradient(
-                    colors: [Color.lInk.opacity(0.18), Color.lInk.opacity(0.02)],
+                    colors: [chartColor.opacity(0.18), chartColor.opacity(0.02)],
                     startPoint: .top, endPoint: .bottom))
                 .interpolationMethod(.catmullRom)
             LineMark(x: .value("Date", pt.date), y: .value("Val", pt.val))
-                .foregroundStyle(Color.lInk)
+                .foregroundStyle(chartColor)
                 .lineStyle(StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
                 .interpolationMethod(.catmullRom)
             if let goal = goalDisplay() {
@@ -487,13 +570,14 @@ struct DashboardView: View {
                     .foregroundStyle(Color.lInk3)
                 }
             }
+            let chartColor = app.useModernDesign ? Color.lAccent : Color.lInk
             Chart(cachedTrajectory) { pt in
                 AreaMark(
                     x: .value("Date", pt.date),
                     y: .value("Val", pt.val)
                 )
                 .foregroundStyle(
-                    .linearGradient(colors: [Color.lInk.opacity(0.18), Color.lInk.opacity(0.02)],
+                    .linearGradient(colors: [chartColor.opacity(0.18), chartColor.opacity(0.02)],
                                     startPoint: .top, endPoint: .bottom)
                 )
                 .interpolationMethod(.catmullRom)
@@ -501,7 +585,7 @@ struct DashboardView: View {
                     x: .value("Date", pt.date),
                     y: .value("Val", pt.val)
                 )
-                .foregroundStyle(Color.lInk)
+                .foregroundStyle(chartColor)
                 .lineStyle(StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
                 .interpolationMethod(.catmullRom)
                 if let goal = goalDisplay() {
@@ -668,6 +752,11 @@ struct DashboardView: View {
                         goalStat(label: "Target date",
                                  value: formatDateLabel(target),
                                  sub: pacingNote(eta: trendETA, target: target))
+                        goalStat(label: "Monthly needed",
+                                 value: monthlySavingsNeeded(goal: goal, cur: cur, by: target).map {
+                                     Fmt.compact($0, app.displayCurrency)
+                                 } ?? "—",
+                                 sub: cleared ? "Goal reached" : "to hit target by deadline")
                     } else {
                         goalStat(label: "Target date",
                                  value: "—",
@@ -781,6 +870,15 @@ struct DashboardView: View {
         f.dateFormat = "MMM yyyy"
         return f.string(from: d)
     }
+
+    private func monthlySavingsNeeded(goal: Double, cur: Double, by target: Date) -> Double? {
+        guard !cleared(goal: goal, cur: cur) else { return nil }
+        let months = Calendar.current.dateComponents([.month], from: Date(), to: target).month ?? 0
+        guard months > 0 else { return nil }
+        return (goal - cur) / Double(months)
+    }
+
+    private func cleared(goal: Double, cur: Double) -> Bool { cur >= goal }
 
     private func pacingNote(eta: Date?, target: Date) -> String {
         guard let eta else { return "Trend not enough data" }

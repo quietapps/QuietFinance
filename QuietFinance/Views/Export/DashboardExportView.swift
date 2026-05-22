@@ -5,6 +5,7 @@ struct DashboardExportView: View {
     let snapshots: [Snapshot]
     let displayCurrency: Currency
     let activeSnapshotID: UUID?
+    let appIconAssetName: String
     let generatedAt: Date
 
     private let sortedAsc: [Snapshot]
@@ -30,10 +31,11 @@ struct DashboardExportView: View {
     private let prevInsurance: Double
     private let prevDebt: Double
 
-    init(snapshots: [Snapshot], displayCurrency: Currency, activeSnapshotID: UUID?, generatedAt: Date = Date()) {
+    init(snapshots: [Snapshot], displayCurrency: Currency, activeSnapshotID: UUID?, appIconAssetName: String = "IconClassic", generatedAt: Date = Date()) {
         self.snapshots = snapshots
         self.displayCurrency = displayCurrency
         self.activeSnapshotID = activeSnapshotID
+        self.appIconAssetName = appIconAssetName
         self.generatedAt = generatedAt
 
         let sorted = snapshots.sorted { $0.date < $1.date }
@@ -217,12 +219,12 @@ struct DashboardExportView: View {
     private var reportHeader: some View {
         HStack(alignment: .firstTextBaseline) {
             HStack(spacing: 10) {
-                Text("L")
-                    .font(.custom(Typo.serif, size: 26))
-                    .foregroundStyle(Color.lPanel)
+                Image(appIconAssetName)
+                    .resizable()
+                    .interpolation(.high)
                     .frame(width: 34, height: 34)
-                    .background(Color.lInk)
                     .clipShape(RoundedRectangle(cornerRadius: 7))
+                    .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.lLine, lineWidth: 0.5))
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Quiet Finance")
                         .font(Typo.serifNum(18))

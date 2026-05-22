@@ -63,6 +63,17 @@ There is **no** XCTest target in-tree as of this writing; verify changes by runn
 
 Project setting: **`app.quiet.QuietFinance`** (used for sandbox container paths). Change only with awareness of user data location.
 
+## App icon
+
+Icons follow the **Quiet Apps icon standard** for macOS 26 Tahoe compatibility:
+
+- **Canvas:** 1024×1024 px transparent PNG
+- **Outer padding:** 9% transparent on all sides → artwork in center 82%. Outer ring fully transparent — Dock composites it at correct visual weight alongside system icons.
+- **Squircle shape:** true superellipse (n=5), NOT `CGPath(roundedRect:)`. Corner radius ≈ 22% of art area width (~188px on an 840×840 art area).
+- **Background fill:** fills the squircle only — never the full 1024px canvas.
+
+Reference implementation: `scripts/GenerateIcon.swift` → `squirclePath(in:exponent:)` with `exponent: 5.0` and `pad: 0.09`.
+
 ## Commit conventions
 
 - Never include `Co-Authored-By: Claude` or any AI authorship trailer in commit messages.

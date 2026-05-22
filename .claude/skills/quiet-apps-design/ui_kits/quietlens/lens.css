@@ -1,0 +1,77 @@
+
+:root{font-family:var(--qa-font-body);}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:#1f2530;color:var(--qa-fg-1);font-family:var(--qa-font-body);}
+#root{height:100%;}
+.ql-stage{position:relative;height:100%;width:100%;overflow:hidden;}
+
+/* Menu bar */
+.ql-menubar{position:absolute;top:0;left:0;right:0;height:26px;background:rgba(11,13,17,.72);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);display:flex;align-items:center;padding:0 12px;color:#F2F3F5;font-size:13px;gap:16px;z-index:20;}
+.ql-mb-left{display:flex;gap:16px;align-items:center;}
+.ql-mb-app{font-weight:600;}
+.ql-mb-apple{font-size:14px;}
+.ql-mb-right{margin-left:auto;display:flex;gap:14px;align-items:center;}
+.ql-mb-status{background:transparent;border:0;color:#F2F3F5;padding:2px 6px;border-radius:6px;cursor:pointer;display:flex;align-items:center;transition:background .12s var(--qa-ease-out);}
+.ql-mb-status svg{width:15px;height:15px;}
+.ql-mb-status.on{color:var(--qa-blue-300);}
+.ql-mb-status.open,.ql-mb-status:hover{background:rgba(255,255,255,.12);}
+
+/* Wallpaper */
+.ql-desktop{position:absolute;inset:26px 0 0 0;overflow:hidden;}
+.ql-wallpaper{position:absolute;inset:0;background:
+  radial-gradient(1100px 700px at 30% 20%, #2b3a4f, transparent 60%),
+  radial-gradient(900px 600px at 80% 90%, #1e2a3a, transparent 60%),
+  linear-gradient(180deg,#0e1620,#1a2230);}
+
+/* Windows */
+.ql-win{position:absolute;background:#fff;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 0.5px rgba(255,255,255,.05),0 0 0 1px rgba(0,0,0,.4);overflow:hidden;font-family:var(--qa-font-body);transition:box-shadow .2s var(--qa-ease-out);}
+.ql-win-chrome{height:34px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#EFEFEF;border-bottom:1px solid #d6d6d6;}
+.ql-win-chrome .tl{width:12px;height:12px;border-radius:99px;display:inline-block;}
+.tl.r{background:#FF5F57;} .tl.y{background:#FEBC2E;} .tl.g{background:#28C840;}
+.ql-win-title{margin-left:6px;font-size:13px;color:var(--qa-fg-2);font-weight:600;}
+.ql-win-body{padding:14px 16px;color:var(--qa-fg-1);}
+.ql-notes-row,.ql-mail-row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--qa-line);font-size:13px;}
+.ql-notes-row:first-child,.ql-mail-row:first-child{border-top:0;}
+.ql-notes-row.dim,.ql-mail-row span:last-child{color:var(--qa-fg-3);}
+.ql-doc h3{font-family:var(--qa-font-display);font-weight:700;font-size:20px;margin:0 0 8px;letter-spacing:-0.01em;}
+.ql-doc p{font-size:14px;line-height:1.5;margin:6px 0;color:var(--qa-fg-1);}
+
+/* Lens — per-window dim overlay (sits inside each unfocused window) */
+.ql-win{transition:filter .3s var(--qa-ease-out);}
+.ql-win-dim{position:absolute;inset:0;background:#0B0D11;pointer-events:none;transition:opacity .3s var(--qa-ease-out);border-radius:inherit;}
+.ql-win.focused{box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.05),0 0 0 0.5px rgba(0,0,0,.4),0 0 0 6px rgba(26,116,196,.22);transition:box-shadow .25s var(--qa-ease-out);}
+
+/* Wallpaper-level dim — sits behind windows so the focused one stays bright */
+.ql-bg-dim{position:absolute;inset:0;background:#0B0D11;pointer-events:none;transition:opacity .3s var(--qa-ease-out);z-index:0;}
+
+/* Cinema-only grain */
+.ql-grain{position:absolute;inset:0;pointer-events:none;opacity:.08;mix-blend-mode:overlay;z-index:25;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+/* Panel */
+.ql-panel{position:absolute;top:34px;right:12px;width:320px;background:#0B0D11;color:#F2F3F5;border-radius:14px;box-shadow:0 24px 64px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.06);padding:14px 16px;z-index:40;font-size:13px;animation:dropIn .28s var(--qa-ease-out) both;}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px) scale(.98);}to{opacity:1;transform:none;}}
+.ql-panel-head{display:flex;justify-content:space-between;align-items:center;}
+.ql-panel-title{font-family:var(--qa-font-display);font-weight:700;font-size:16px;letter-spacing:-0.01em;}
+.ql-panel-sub{font-size:12px;color:#82B4E0;margin-top:2px;margin-bottom:14px;}
+.ql-section{padding:10px 0;border-top:1px solid #20242C;}
+.ql-section:first-of-type{border-top:0;padding-top:0;}
+.ql-section-label{font-size:11px;color:#B8BDC6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:600;}
+.ql-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;}
+.ql-mono{font-family:var(--qa-font-mono);font-size:12px;color:#B8BDC6;}
+.ql-seg{display:flex;background:#16191F;padding:3px;border-radius:9px;gap:2px;}
+.ql-seg button{flex:1;height:28px;border:0;background:transparent;color:#B8BDC6;font:600 12px/1 var(--qa-font-body);border-radius:7px;cursor:pointer;}
+.ql-seg button.on{background:#20242C;color:#fff;}
+.ql-slider{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:#20242C;border-radius:99px;margin-top:6px;}
+.ql-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:99px;background:#fff;cursor:pointer;}
+.ql-toggle{width:36px;height:22px;background:var(--qa-blue);border-radius:99px;border:0;position:relative;cursor:pointer;flex:none;transition:background .12s;}
+.ql-toggle span{position:absolute;width:16px;height:16px;background:#fff;border-radius:99px;top:3px;right:3px;transition:right .15s var(--qa-ease-out), left .15s var(--qa-ease-out);box-shadow:0 1px 2px rgba(0,0,0,.2);}
+.ql-toggle.off{background:#2A2F38;}
+.ql-toggle.off span{left:3px;right:auto;}
+.ql-toggle.sm{width:30px;height:18px;}
+.ql-toggle.sm span{width:12px;height:12px;}
+.ql-foot{display:flex;align-items:center;gap:8px;padding-top:12px;border-top:1px solid #20242C;margin-top:6px;}
+.ql-kbd{display:flex;gap:3px;}
+.ql-kbd kbd{font-family:var(--qa-font-mono);font-size:10px;padding:2px 5px;background:#20242C;color:#B8BDC6;border-radius:4px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.5);}
+.ql-foot-label{font-size:11px;color:#6C737E;}
+.ql-foot-btn{margin-left:auto;background:transparent;border:0;color:var(--qa-blue-300);font:600 12px/1 var(--qa-font-body);cursor:pointer;}
+.ql-foot-btn:hover{color:#fff;}

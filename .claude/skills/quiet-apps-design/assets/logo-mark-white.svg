@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" aria-label="Quiet Apps mark (white)">
+  <circle cx="32" cy="32" r="28" fill="#FFFFFF"></circle>
+  <circle cx="32" cy="32" r="18" fill="none" stroke="#1A74C4" stroke-width="6"></circle>
+  <circle cx="32" cy="32" r="3.4" fill="#1A74C4"></circle>
+  <path d="M40 38 Q 46 44 50 50 L 44 50 Q 40 46 38 42 Z" fill="#1A74C4"></path>
+  <path d="M42 40 L 51 51 L 44 51 L 39 44 Z" fill="#FFFFFF"></path>
+</svg>

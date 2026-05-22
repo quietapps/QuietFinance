@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--qa-bg-2);font-family:var(--qa-font-body);color:var(--qa-fg-1);}
+  body{padding:18px 20px;}
+  .grid{display:grid;gap:12px;}
+  .row{display:flex;gap:12px;align-items:center;}
+  .swatch{width:100%;height:64px;border-radius:var(--qa-r-md);box-shadow:inset 0 0 0 1px rgba(14,17,22,0.06);display:flex;align-items:flex-end;justify-content:space-between;padding:8px 10px;}
+  .lbl{font-size:11px;font-weight:600;color:var(--qa-fg-2);}
+  .hex{font-family:var(--qa-font-mono);font-size:11px;color:var(--qa-fg-3);}
+  .name{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--qa-fg-3);margin:0 0 8px;}
+  .card{background:var(--qa-bg-1);border-radius:var(--qa-r-lg);padding:16px;box-shadow:var(--qa-shadow-1);}
+  
+</style></head><body>
+  <div class="name">Semantic colors · sparing use</div>
+  <div class="grid" style="grid-template-columns:repeat(4,1fr);">
+    <div><div class="swatch" style="background:#1A74C4;color:#fff"><span class="lbl" style="color:inherit;opacity:.95">accent</span></div><div class="hex" style="margin-top:4px">#1A74C4</div><div style="font-size:11px;color:var(--qa-fg-3);margin-top:2px">primary actions, links</div></div><div><div class="swatch" style="background:#1F9D6B;color:#fff"><span class="lbl" style="color:inherit;opacity:.95">success</span></div><div class="hex" style="margin-top:4px">#1F9D6B</div><div style="font-size:11px;color:var(--qa-fg-3);margin-top:2px">net gain, saved</div></div><div><div class="swatch" style="background:#C98A12;color:#fff"><span class="lbl" style="color:inherit;opacity:.95">warning</span></div><div class="hex" style="margin-top:4px">#C98A12</div><div style="font-size:11px;color:var(--qa-fg-3);margin-top:2px">attention, drift</div></div><div><div class="swatch" style="background:#C8392F;color:#fff"><span class="lbl" style="color:inherit;opacity:.95">danger</span></div><div class="hex" style="margin-top:4px">#C8392F</div><div style="font-size:11px;color:var(--qa-fg-3);margin-top:2px">destructive, error</div></div>
+  </div>
+</body></html>

@@ -1,0 +1,89 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;background:var(--qa-bg-2);font-family:var(--qa-font-body);color:var(--qa-fg-1);}
+  body{padding:18px 20px;}
+  .eye{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--qa-fg-3);margin:0 0 10px;}
+
+  .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;}
+  .card{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:var(--qa-shadow-1);}
+  .mono{font-family:var(--qa-font-mono);font-variant-numeric:tabular-nums;}
+
+  /* Tabular-nums demo — two stacked amounts align column 1:1 */
+  .stack .row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;font-family:var(--qa-font-mono);font-variant-numeric:tabular-nums;font-size:15px;}
+  .stack .row .lbl{color:var(--qa-fg-2);font-size:13px;}
+  .stack .row .v{font-weight:500;}
+  .stack .row .v.pos{color:var(--qa-success);}
+  .stack .row .v.neg{color:var(--qa-danger);}
+  .stack hr{border:0;border-top:1px solid var(--qa-line);margin:6px 0;}
+
+  /* Currency + KPI */
+  .kpi{font-family:var(--qa-font-mono);font-feature-settings:"tnum" 1, "ss01" 1;font-variant-numeric:tabular-nums;}
+  .kpi .big{font-size:42px;font-weight:500;letter-spacing:-0.02em;color:var(--qa-fg-1);line-height:1;}
+  .kpi .big .ccy{color:var(--qa-fg-3);font-size:.55em;margin-right:2px;}
+  .kpi .delta{display:inline-flex;gap:8px;margin-top:6px;font-size:13px;color:var(--qa-success);}
+
+  /* Keyboard cues */
+  .keys{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
+  .kbd{font-family:var(--qa-font-mono);font-size:11px;background:var(--qa-bg-3);padding:2px 6px;border-radius:4px;color:var(--qa-fg-2);box-shadow:inset 0 -1px 0 var(--qa-line);}
+
+  /* Code */
+  .code{background:#0B0D11;color:#F2F3F5;border-radius:10px;padding:12px 14px;font-family:var(--qa-font-mono);font-size:12px;line-height:1.55;}
+  .code .c{color:#7A8088;}
+  .code .k{color:#82B4E0;}
+  .code .s{color:#9EC9A1;}
+  .code .n{color:#E0B074;}
+
+  .lbl{font-family:var(--qa-font-mono);font-size:10px;color:var(--qa-fg-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+
+  .features{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .feat{background:var(--qa-blue-100);color:var(--qa-blue);border-radius:99px;font-family:var(--qa-font-mono);font-size:10px;padding:3px 8px;font-weight:600;}
+</style></head>
+<body>
+
+  <div class="eye">Geist Mono · tnum · ss01 · for amounts, code, time, IDs</div>
+
+  <div class="grid">
+    <div class="card stack">
+      <div class="lbl">Tabular nums · digits align by column</div>
+      <div class="row"><span class="lbl" style="margin:0;text-transform:none;letter-spacing:0;color:var(--qa-fg-2);font-size:13px;">Chase Checking</span><span class="v">$&nbsp;&nbsp;&nbsp;12,408.50</span></div>
+      <div class="row"><span class="lbl" style="margin:0;text-transform:none;letter-spacing:0;color:var(--qa-fg-2);font-size:13px;">Fidelity Brokerage</span><span class="v">$&nbsp;142,012.10</span></div>
+      <div class="row"><span class="lbl" style="margin:0;text-transform:none;letter-spacing:0;color:var(--qa-fg-2);font-size:13px;">Apple Card</span><span class="v neg">−$&nbsp;&nbsp;&nbsp;1,284.20</span></div>
+      <hr>
+      <div class="row"><span class="lbl" style="margin:0;text-transform:none;letter-spacing:0;color:var(--qa-fg-1);font-size:13px;font-weight:600;">Net</span><span class="v pos">$&nbsp;153,136.40</span></div>
+
+      <div class="features">
+        <span class="feat">tnum</span><span class="feat">ss01</span><span class="feat">no ligatures</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="lbl">KPI · big amount</div>
+      <div class="kpi">
+        <div class="big"><span class="ccy">$</span>184,520.45</div>
+        <div class="delta">↗ +$1,240.10 <span style="color:var(--qa-fg-3);">+0.67%</span></div>
+      </div>
+
+      <div class="lbl" style="margin-top:18px;">Time · duration · ID</div>
+      <div class="mono" style="font-size:13px;color:var(--qa-fg-2);line-height:1.8;">
+        <span style="color:var(--qa-fg-1);">22:18:04</span> · 00:24:32 · saved 2s ago<br>
+        <span style="color:var(--qa-fg-3);">snap_</span><span style="color:var(--qa-fg-1);">8a3f2c1d</span>
+      </div>
+
+      <div class="lbl" style="margin-top:18px;">Keyboard cues · mono so they align with running text</div>
+      <div class="keys">
+        <span class="kbd">⌘</span><span class="kbd">⇧</span><span class="kbd">L</span>
+        <span style="font-size:12px;color:var(--qa-fg-3);margin:0 6px;">toggle Lens</span>
+        <span class="kbd">⌘</span><span class="kbd">N</span>
+        <span style="font-size:12px;color:var(--qa-fg-3);margin-left:6px;">new snapshot</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="code" style="margin-top:14px;">
+<span class="c">// snapshots are tracked locally — never sent</span>
+<span class="k">const</span> balance = <span class="n">184_520.45</span>;
+<span class="k">await</span> snapshots.<span class="k">append</span>({ at: <span class="n">1716243000</span>, balance });</div>
+
+</body></html>

@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--qa-bg-2);font-family:var(--qa-font-body);color:var(--qa-fg-1);}
+  body{padding:18px 20px;}
+  .name{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--qa-fg-3);margin:0 0 10px;}
+
+  .grid{display:grid;gap:8px;grid-template-columns:repeat(8,1fr);}
+  .sw{display:flex;flex-direction:column;}
+  .chip{height:64px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(14,17,22,.06);}
+  .lbl{font-size:11px;font-weight:600;color:var(--qa-fg-2);margin-top:6px;}
+  .hex{font-family:var(--qa-font-mono);font-size:10px;color:var(--qa-fg-3);}
+
+  .accents{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .ac{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border-radius:10px;box-shadow:var(--qa-shadow-1);}
+  .ac .chip{width:34px;height:34px;border-radius:7px;flex:none;}
+  .ac .meta b{display:block;font-size:11px;color:var(--qa-fg-1);font-weight:600;}
+  .ac .meta span{font-family:var(--qa-font-mono);font-size:10px;color:var(--qa-fg-3);}
+</style></head>
+<body>
+  <div class="name">Quiet Blue · brand primary · #1E88E5</div>
+  <div class="grid">
+    <div class="sw"><div class="chip" style="background:#F4F9FE"></div><div class="lbl">50</div><div class="hex">#F4F9FE</div></div>
+    <div class="sw"><div class="chip" style="background:#E6F2FC"></div><div class="lbl">100</div><div class="hex">#E6F2FC</div></div>
+    <div class="sw"><div class="chip" style="background:#BDDDF7"></div><div class="lbl">200</div><div class="hex">#BDDDF7</div></div>
+    <div class="sw"><div class="chip" style="background:#8DC4F1"></div><div class="lbl">300</div><div class="hex">#8DC4F1</div></div>
+    <div class="sw"><div class="chip" style="background:#4FA3EA"></div><div class="lbl">400</div><div class="hex">#4FA3EA</div></div>
+    <div class="sw"><div class="chip" style="background:#1E88E5"></div><div class="lbl">500 ★</div><div class="hex">#1E88E5</div></div>
+    <div class="sw"><div class="chip" style="background:#1565C0"></div><div class="lbl">600</div><div class="hex">#1565C0</div></div>
+    <div class="sw"><div class="chip" style="background:#0E4682"></div><div class="lbl">700</div><div class="hex">#0E4682</div></div>
+  </div>
+
+  <div class="accents">
+    <div class="ac"><div class="chip" style="background:#80CBC4"></div><div class="meta"><b>Light Tal</b><span>#80CBC4 · accent</span></div></div>
+    <div class="ac"><div class="chip" style="background:#E0E0E0"></div><div class="meta"><b>Focus Grey</b><span>#E0E0E0 · chip bg</span></div></div>
+    <div class="ac"><div class="chip" style="background:#FFFFFF;box-shadow:inset 0 0 0 1px var(--qa-line);"></div><div class="meta"><b>Surface</b><span>#FFFFFF</span></div></div>
+    <div class="ac"><div class="chip" style="background:#0E1116"></div><div class="meta"><b>Ink</b><span>#0E1116</span></div></div>
+  </div>
+</body></html>

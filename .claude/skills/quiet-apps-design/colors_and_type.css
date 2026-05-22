@@ -1,0 +1,216 @@
+/* ============================================================
+   Quiet Apps — Design tokens
+   ----------------------------------------------------------------
+   Brand primary sampled directly from the business card: #1A74C4.
+   Type stack uses SF Pro Display (display/UI) + Geist Mono (numeric/code).
+   SF Pro Display is loaded from local OTF files under fonts/.
+   The uploaded set provides upright 400/500/700 plus a full italic
+   family (100/200/300/600/800/900). 600 and 800 upright fall back to
+   500/700 via the browser's weight matching.
+   ============================================================ */
+
+/* Fonts: SF Pro Display (uploaded brand files) for display + UI; Geist Mono for numerics. */
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap');
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('fonts/SFPRODISPLAYREGULAR.OTF') format('opentype');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('fonts/SFPRODISPLAYMEDIUM.OTF') format('opentype');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('fonts/SFPRODISPLAYBOLD.OTF') format('opentype');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('fonts/SFPRODISPLAYLIGHTITALIC.OTF') format('opentype');
+  font-weight: 300; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('fonts/SFPRODISPLAYSEMIBOLDITALIC.OTF') format('opentype');
+  font-weight: 600; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('fonts/SFPRODISPLAYHEAVYITALIC.OTF') format('opentype');
+  font-weight: 800; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('fonts/SFPRODISPLAYBLACKITALIC.OTF') format('opentype');
+  font-weight: 900; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('fonts/SFPRODISPLAYTHINITALIC.OTF') format('opentype');
+  font-weight: 200; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('fonts/SFPRODISPLAYULTRALIGHTITALIC.OTF') format('opentype');
+  font-weight: 100; font-style: italic; font-display: swap;
+}
+
+:root {
+  /* ─── Brand ──────────────────────────────────────────────── */
+  --qa-blue:           #1E88E5;   /* Quiet Blue — brand primary */
+  --qa-blue-600:       #1565C0;   /* dark — hover / pressed */
+  --qa-blue-500:       #1E88E5;
+  --qa-blue-400:       #4FA3EA;
+  --qa-blue-300:       #8DC4F1;
+  --qa-blue-200:       #BDDDF7;
+  --qa-blue-100:       #E6F2FC;
+  --qa-blue-50:        #F4F9FE;
+
+  --qa-accent-teal:    #80CBC4;   /* secondary accent — light tal */
+  --qa-focus-grey:     #E0E0E0;   /* HUD / focus chip background */
+
+  /* ─── Neutrals (warmth: very slightly cool/neutral) ──────── */
+  --qa-ink:            #0E1116;   /* near-black for text on light */
+  --qa-ink-2:          #1F242C;
+  --qa-fg-1:           #0E1116;
+  --qa-fg-2:           #3A4049;   /* secondary text */
+  --qa-fg-3:           #6C737E;   /* tertiary / meta */
+  --qa-fg-4:           #9AA0AA;   /* placeholder / disabled */
+  --qa-line:           #E4E6EA;   /* hairline borders */
+  --qa-line-strong:    #CFD3DA;
+  --qa-bg-1:           #FFFFFF;   /* surface */
+  --qa-bg-2:           #F7F8FA;   /* canvas / page */
+  --qa-bg-3:           #EEF0F3;   /* subtle */
+  --qa-bg-tint:        #F3F7FC;   /* faint blue wash */
+
+  /* Dark surfaces — for menu bar overlays, blur scrims */
+  --qa-dark-1:         #0B0D11;
+  --qa-dark-2:         #16191F;
+  --qa-dark-3:         #20242C;
+  --qa-dark-line:      #2A2F38;
+  --qa-on-dark:        #F2F3F5;
+  --qa-on-dark-2:      #B8BDC6;
+
+  /* ─── Semantic ───────────────────────────────────────────── */
+  --qa-accent:         var(--qa-blue);
+  --qa-success:        #1F9D6B;
+  --qa-warning:        #C98A12;
+  --qa-danger:         #C8392F;
+  --qa-info:           var(--qa-blue);
+
+  /* ─── Type scale ────────────────────────────────────────── */
+  --qa-font-display:   'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --qa-font-body:      'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --qa-font-mono:      'Geist Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+
+  --qa-w-regular: 400;
+  --qa-w-medium:  500;
+  --qa-w-semibold:600;  /* uploaded set has no upright 600 — browser fakes from Medium */
+  --qa-w-bold:    700;
+  --qa-w-extra:   700;  /* wordmark / display — capped at Bold (uploaded set's max upright weight) */
+
+  /* Modular scale, 1.20 ratio, base 16 */
+  --qa-text-xs:    12px;
+  --qa-text-sm:    13px;
+  --qa-text-base:  15px;
+  --qa-text-md:    17px;
+  --qa-text-lg:    20px;
+  --qa-text-xl:    24px;
+  --qa-text-2xl:   30px;
+  --qa-text-3xl:   38px;
+  --qa-text-4xl:   48px;
+  --qa-text-5xl:   60px;
+  --qa-text-display: 76px;
+
+  /* Line heights tuned tight for the heavy weights */
+  --qa-lh-tight:   1.05;
+  --qa-lh-snug:    1.2;
+  --qa-lh-normal:  1.45;
+  --qa-lh-relaxed: 1.6;
+
+  /* Tracking */
+  --qa-track-tight:  -0.02em;
+  --qa-track-snug:   -0.01em;
+  --qa-track-normal: 0em;
+  --qa-track-wide:   0.04em;
+  --qa-track-caps:   0.08em;
+
+  /* ─── Spacing scale (4pt base) ──────────────────────────── */
+  --qa-space-0:  0;
+  --qa-space-1:  4px;
+  --qa-space-2:  8px;
+  --qa-space-3:  12px;
+  --qa-space-4:  16px;
+  --qa-space-5:  20px;
+  --qa-space-6:  24px;
+  --qa-space-8:  32px;
+  --qa-space-10: 40px;
+  --qa-space-12: 48px;
+  --qa-space-16: 64px;
+  --qa-space-20: 80px;
+  --qa-space-24: 96px;
+
+  /* ─── Radii (Mac-native generous rounding) ──────────────── */
+  --qa-r-xs:  4px;
+  --qa-r-sm:  6px;
+  --qa-r-md:  10px;
+  --qa-r-lg:  14px;
+  --qa-r-xl:  20px;
+  --qa-r-2xl: 28px;
+  --qa-r-pill: 999px;
+  --qa-r-app-icon: 22.37%; /* macOS Big Sur app icon mask */
+
+  /* ─── Elevation (subtle, layered) ───────────────────────── */
+  --qa-shadow-0: 0 0 0 1px var(--qa-line);
+  --qa-shadow-1: 0 1px 2px rgba(14,17,22,0.05), 0 0 0 1px rgba(14,17,22,0.04);
+  --qa-shadow-2: 0 2px 6px rgba(14,17,22,0.06), 0 0 0 1px rgba(14,17,22,0.04);
+  --qa-shadow-3: 0 8px 24px rgba(14,17,22,0.10), 0 0 0 1px rgba(14,17,22,0.04);
+  --qa-shadow-4: 0 16px 48px rgba(14,17,22,0.16), 0 0 0 1px rgba(14,17,22,0.05);
+  --qa-shadow-window: 0 30px 80px rgba(14,17,22,0.30), 0 0 0 0.5px rgba(255,255,255,0.04), 0 0 0 1px rgba(0,0,0,0.4);
+  --qa-shadow-inset:  inset 0 1px 0 rgba(255,255,255,0.6);
+  --qa-focus-ring:    0 0 0 3px rgba(30,136,229,0.35);
+
+  /* ─── Motion ─────────────────────────────────────────────── */
+  --qa-ease-out:    cubic-bezier(0.22, 1, 0.36, 1);     /* primary; calm settle */
+  --qa-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --qa-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* gentle overshoot, sparing */
+  --qa-dur-fast:    120ms;
+  --qa-dur-base:    180ms;
+  --qa-dur-slow:    280ms;
+  --qa-dur-window:  420ms;
+
+  /* Blur (Quiet Lens / vibrancy) */
+  --qa-blur-thin:   12px;
+  --qa-blur-med:    28px;
+  --qa-blur-deep:   60px;
+}
+
+/* ============================================================
+   Semantic element styles — drop-in defaults
+   ============================================================ */
+
+.qa-display {
+  font-family: var(--qa-font-display);
+  font-weight: var(--qa-w-extra);
+  font-size:   var(--qa-text-display);
+  line-height: var(--qa-lh-tight);
+  letter-spacing: var(--qa-track-tight);
+  color: var(--qa-fg-1);
+}
+.qa-h1 { font: var(--qa-w-bold) var(--qa-text-4xl)/var(--qa-lh-tight) var(--qa-font-display); letter-spacing: var(--qa-track-tight); color: var(--qa-fg-1); }
+.qa-h2 { font: var(--qa-w-bold) var(--qa-text-3xl)/var(--qa-lh-snug)  var(--qa-font-display); letter-spacing: var(--qa-track-tight); color: var(--qa-fg-1); }
+.qa-h3 { font: var(--qa-w-semibold) var(--qa-text-2xl)/var(--qa-lh-snug) var(--qa-font-display); letter-spacing: var(--qa-track-snug); color: var(--qa-fg-1); }
+.qa-h4 { font: var(--qa-w-semibold) var(--qa-text-xl)/var(--qa-lh-snug) var(--qa-font-display); color: var(--qa-fg-1); }
+.qa-h5 { font: var(--qa-w-semibold) var(--qa-text-lg)/var(--qa-lh-snug) var(--qa-font-display); color: var(--qa-fg-1); }
+
+.qa-body  { font: var(--qa-w-regular) var(--qa-text-base)/var(--qa-lh-normal)  var(--qa-font-body); color: var(--qa-fg-1); }
+.qa-body-sm { font: var(--qa-w-regular) var(--qa-text-sm)/var(--qa-lh-normal) var(--qa-font-body); color: var(--qa-fg-2); }
+.qa-meta  { font: var(--qa-w-medium)  var(--qa-text-xs)/var(--qa-lh-normal)  var(--qa-font-body); color: var(--qa-fg-3); letter-spacing: var(--qa-track-snug); }
+.qa-eyebrow { font: var(--qa-w-semibold) var(--qa-text-xs)/1 var(--qa-font-body); letter-spacing: var(--qa-track-caps); text-transform: uppercase; color: var(--qa-fg-3); }
+.qa-mono  { font: var(--qa-w-regular) var(--qa-text-sm)/var(--qa-lh-normal)  var(--qa-font-mono); color: var(--qa-fg-1); font-feature-settings: "tnum" 1; }
+
+/* Numerals — tabular wherever amounts/timers appear */
+.qa-numeric { font-feature-settings: "tnum" 1, "ss01" 1; font-variant-numeric: tabular-nums; }

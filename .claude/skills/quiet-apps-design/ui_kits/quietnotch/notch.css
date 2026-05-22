@@ -1,0 +1,176 @@
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:#1a1d24;font-family:var(--qa-font-body);}
+#root{height:100%;}
+
+/* Macbook frame + wallpaper */
+.qn-stage{position:relative;height:100%;display:flex;align-items:flex-start;justify-content:center;padding-top:24px;background:linear-gradient(180deg,#4a3a52,#2a1f33);overflow:hidden;}
+.qn-bezel{
+  position:relative; width:min(1180px,96%); aspect-ratio:16/10;
+  background:#0B0D11; border-radius:14px 14px 24px 24px;
+  padding:8px 8px 16px;
+  box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px #2A2F38;
+}
+.qn-screen{position:relative;width:100%;height:100%;border-radius:6px;overflow:hidden;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 2px, transparent 2px 12px),
+    radial-gradient(900px 600px at 60% 60%, #8a5fa3, #5a3a77 60%, #3a2452);
+  color:#fff;
+}
+
+/* macOS menu bar — flanks the notch panel */
+.qn-menubar{
+  position:absolute; top:0; left:0; right:0; height:24px;
+  display:flex; align-items:center; padding:0 14px;
+  font-size:12px; color:#fff; gap:14px;
+  z-index:1;
+}
+.qn-menubar .left,.qn-menubar .right{display:flex; gap:14px; align-items:center; height:100%;}
+.qn-menubar .right{margin-left:auto;}
+.qn-menubar svg{width:14px; height:14px;}
+.qn-mb-app{font-weight:700;}
+.qn-mb-stage-mgr{background:rgba(255,255,255,.18); padding:1px 5px; border-radius:4px; display:inline-flex;}
+
+/* ── The Dynamic-Island-style Quiet Notch panel ── */
+.qn-panel{
+  position:absolute; left:50%; top:0; transform:translateX(-50%);
+  width:60%; max-width:760px; min-width:540px;
+  background:#0A0A0C; color:#F2F3F5;
+  border-radius:0 0 22px 22px;
+  display:flex; flex-direction:column;
+  box-shadow:0 12px 30px rgba(0,0,0,.6);
+  overflow:hidden;
+  z-index:2;
+}
+
+/* Status row */
+.qn-statusbar{
+  display:grid; grid-template-columns:auto 1fr auto;
+  align-items:center; padding:6px 14px 4px; gap:8px;
+}
+.qn-tabs{display:flex; gap:3px;}
+.qn-tab{
+  width:24px; height:20px;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; border:0; border-radius:5px;
+  color:#7A8088; cursor:pointer;
+}
+.qn-tab.on{background:rgba(255,255,255,.14); color:#F2F3F5;}
+.qn-tab:hover{background:rgba(255,255,255,.08); color:#F2F3F5;}
+.qn-tab svg{width:13px; height:13px;}
+
+/* Notch cutout in the middle — pure decoration so users see what it is */
+.qn-notch-cutout{
+  width:120px; height:18px; background:#000; border-radius:0 0 10px 10px;
+  margin:-6px auto -4px;
+}
+
+.qn-status{display:flex; align-items:center; gap:6px; justify-self:end;}
+.qn-icon-btn{
+  width:20px; height:20px; background:transparent; border:0;
+  color:#A8ABB3; cursor:pointer; padding:0;
+  display:flex; align-items:center; justify-content:center; border-radius:4px;
+}
+.qn-icon-btn:hover{background:rgba(255,255,255,.08); color:#fff;}
+.qn-icon-btn svg{width:13px; height:13px;}
+.qn-batt-pct{font-size:11px; color:#F2F3F5; font-weight:500; font-variant-numeric:tabular-nums;}
+.qn-batt{
+  position:relative; width:22px; height:11px;
+  border-radius:2.5px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);
+  display:flex; align-items:center;
+}
+.qn-batt::after{
+  content:""; position:absolute; right:-2px; top:2.5px; width:2px; height:6px;
+  background:rgba(255,255,255,.35); border-radius:0 1px 1px 0;
+}
+.qn-batt-fill{display:block; height:7px; background:#28C840; border-radius:1.5px; margin-left:1.5px;}
+.qn-batt-bolt{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:7px; height:7px; fill:#0E1116;}
+
+/* ── Content (3 columns) ── */
+.qn-content{
+  display:grid; grid-template-columns:1.3fr 1fr 0.7fr;
+  gap:10px; padding:6px 14px 14px;
+}
+.qn-mono{font-family:var(--qa-font-mono); font-variant-numeric:tabular-nums;}
+
+/* Now Playing */
+.qn-np{display:flex; align-items:flex-start; gap:10px; min-width:0;}
+.qn-album{position:relative; flex:none;}
+.qn-album-art{
+  width:62px; height:62px; border-radius:7px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05) 0 1px, transparent 1px) repeat,
+    linear-gradient(180deg, #c5b8a3 0%, #8a7f6d 60%, #2a1f12 100%);
+  background-size:100% 5px, 100% 100%;
+  box-shadow:0 4px 10px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08);
+}
+.qn-album-badge{
+  position:absolute; right:-3px; bottom:-3px;
+  width:18px; height:18px; border-radius:5px;
+  background:#FA243C;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 0 1.5px #0A0A0C;
+}
+.qn-album-badge svg{width:11px; height:11px; fill:#fff;}
+
+.qn-np-body{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+.qn-np-title{font-size:13px; font-weight:700; color:#F2F3F5; line-height:1.15; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.qn-np-artist{font-size:11px; color:#A8ABB3; line-height:1.1;}
+.qn-np-bar{height:3px; background:rgba(255,255,255,.12); border-radius:99px; overflow:hidden; margin-top:6px;}
+.qn-np-bar span{display:block; height:100%; background:#F2F3F5; border-radius:99px;}
+.qn-np-times{display:flex; justify-content:space-between; font-size:9px; color:#7A8088; margin-top:3px;}
+.qn-np-controls{display:flex; align-items:center; gap:14px; justify-content:center; margin-top:6px;}
+.qn-np-controls button{
+  background:transparent; border:0; color:#F2F3F5; cursor:pointer;
+  padding:0; display:flex;
+}
+.qn-np-controls button svg{width:14px; height:14px;}
+.qn-np-controls button.big svg{width:17px; height:17px;}
+
+/* Calendar */
+.qn-cal{display:flex; gap:10px; min-width:0;}
+.qn-cal-head{flex:none; text-align:left;}
+.qn-cal-month{
+  font-family:var(--qa-font-display); font-weight:700;
+  font-size:20px; color:#F2F3F5; letter-spacing:-0.01em; line-height:1;
+}
+.qn-cal-days{display:flex; gap:6px; margin-top:6px;}
+.qn-cal-day{display:flex; flex-direction:column; align-items:center; gap:1px; min-width:18px;}
+.qn-cal-dn{font-size:9px; color:#7A8088; font-weight:600;}
+.qn-cal-day.today .qn-cal-dn{color:var(--qa-blue-300);}
+.qn-cal-dd{font-size:12px; font-weight:600; color:#F2F3F5; font-variant-numeric:tabular-nums;}
+.qn-cal-day.today .qn-cal-dd{
+  width:18px; height:18px; border-radius:99px;
+  background:var(--qa-blue); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+}
+.qn-cal-msg{flex:1; min-width:0; padding-top:2px;}
+.qn-cal-msg-title{font-size:11px; font-weight:700; color:#F2F3F5; line-height:1.2;}
+.qn-cal-msg-sub{font-size:10px; color:#7A8088; line-height:1.2; margin-top:2px;}
+
+/* Webcam */
+.qn-cam{
+  position:relative; aspect-ratio:4/3; border-radius:8px; overflow:hidden;
+  background:
+    radial-gradient(120% 80% at 50% 30%, #f0c3a3 0%, #b88a6b 25%, #6a4830 55%, #2a1e15 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 4px 10px rgba(0,0,0,.4);
+}
+.qn-cam::before{
+  /* face silhouette */
+  content:""; position:absolute; left:50%; top:36%; transform:translateX(-50%);
+  width:42%; height:30%; border-radius:50%;
+  background:radial-gradient(80% 90% at 50% 35%, #d8a684 0%, #a07050 60%, #6a4830 100%);
+}
+.qn-cam::after{
+  /* shirt silhouette */
+  content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+  width:100%; height:38%;
+  background:linear-gradient(180deg, transparent 0%, #1f1b18 30%, #0a0908 100%);
+}
+.qn-cam-rec{
+  position:absolute; top:5px; right:5px;
+  background:rgba(0,0,0,.55); color:#fff;
+  font-family:var(--qa-font-mono); font-size:8px; font-weight:600;
+  padding:1px 4px; border-radius:3px; display:flex; align-items:center; gap:3px;
+  z-index:2;
+}
+.qn-cam-rec::before{content:""; width:4px; height:4px; border-radius:99px; background:#FF3B30; box-shadow:0 0 4px #FF3B30;}

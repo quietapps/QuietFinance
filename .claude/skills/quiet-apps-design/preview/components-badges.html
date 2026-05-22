@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--qa-bg-2);font-family:var(--qa-font-body);color:var(--qa-fg-1);}
+  body{padding:18px 20px;}
+  .grid{display:grid;gap:12px;}
+  .row{display:flex;gap:12px;align-items:center;}
+  .swatch{width:100%;height:64px;border-radius:var(--qa-r-md);box-shadow:inset 0 0 0 1px rgba(14,17,22,0.06);display:flex;align-items:flex-end;justify-content:space-between;padding:8px 10px;}
+  .lbl{font-size:11px;font-weight:600;color:var(--qa-fg-2);}
+  .hex{font-family:var(--qa-font-mono);font-size:11px;color:var(--qa-fg-3);}
+  .name{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--qa-fg-3);margin:0 0 8px;}
+  .card{background:var(--qa-bg-1);border-radius:var(--qa-r-lg);padding:16px;box-shadow:var(--qa-shadow-1);}
+  
+  body{padding:22px;}
+  .row{flex-wrap:wrap;gap:8px;}
+  .b{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;font-family:var(--qa-font-body);}
+  .b.dot::before{content:"";width:6px;height:6px;border-radius:99px;background:currentColor;}
+  .b.blue{background:var(--qa-blue-100);color:var(--qa-blue-700,#0E4E8A);}
+  .b.green{background:#E5F4ED;color:#155A3F;}
+  .b.amber{background:#FAEFD5;color:#7A5208;}
+  .b.red{background:#FBE6E4;color:#822420;}
+  .b.gray{background:var(--qa-bg-3);color:var(--qa-fg-2);}
+  .kbd{font-family:var(--qa-font-mono);font-size:11px;background:var(--qa-bg-3);padding:2px 6px;border-radius:4px;color:var(--qa-fg-2);box-shadow:inset 0 -1px 0 var(--qa-line);}
+
+</style></head><body>
+  <div class="name">Badges, status, key cues</div>
+  <div class="row" style="margin-bottom:10px;">
+    <span class="b blue dot">Active</span>
+    <span class="b green dot">Saved</span>
+    <span class="b amber dot">Drift</span>
+    <span class="b red dot">Failed</span>
+    <span class="b gray">Archived</span>
+  </div>
+  <div class="row"><span class="kbd">⌘</span><span class="kbd">⇧</span><span class="kbd">L</span><span style="font-size:12px;color:var(--qa-fg-3);align-self:center;">— toggle Quiet Lens</span></div>
+</body></html>

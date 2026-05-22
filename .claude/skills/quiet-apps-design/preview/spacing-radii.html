@@ -1,0 +1,61 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--qa-bg-2);font-family:var(--qa-font-body);color:var(--qa-fg-1);}
+  body{padding:18px 20px;}
+  .name{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--qa-fg-3);margin:0 0 10px;}
+
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;}
+  .tok{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .shape{width:100%;aspect-ratio:1;background:var(--qa-blue);position:relative;}
+  .shape.win{background:#fff;box-shadow:0 0 0 1px var(--qa-line);}
+  .shape.app{background:linear-gradient(155deg,#3D93D8,#0E4E8A);}
+  .meta{font-family:var(--qa-font-mono);font-size:10px;color:var(--qa-fg-3);text-align:center;line-height:1.3;}
+  .meta b{display:block;color:var(--qa-fg-1);font-weight:600;}
+  .meta span{display:block;color:var(--qa-fg-3);}
+
+  .notes{margin-top:14px;background:var(--qa-bg-tint);border-radius:10px;padding:10px 12px;font-size:11px;color:var(--qa-fg-2);line-height:1.5;}
+  .notes b{color:var(--qa-fg-1);font-weight:600;}
+  .notes code{font-family:var(--qa-font-mono);font-size:10px;background:var(--qa-bg-3);padding:1px 4px;border-radius:3px;}
+</style></head>
+<body>
+
+  <div class="name">macOS-aligned corner radii</div>
+
+  <div class="grid">
+    <div class="tok">
+      <div class="shape" style="border-radius:4px;"></div>
+      <div class="meta"><b>4</b><span>xs</span><span>tag · keycap</span></div>
+    </div>
+    <div class="tok">
+      <div class="shape" style="border-radius:6px;"></div>
+      <div class="meta"><b>6</b><span>sm</span><span>chip · badge</span></div>
+    </div>
+    <div class="tok">
+      <div class="shape" style="border-radius:8px;"></div>
+      <div class="meta"><b>8</b><span>md</span><span>button · input</span></div>
+    </div>
+    <div class="tok">
+      <div class="shape" style="border-radius:12px;"></div>
+      <div class="meta"><b>12</b><span>lg</span><span>card · row group</span></div>
+    </div>
+    <div class="tok">
+      <div class="shape win" style="border-radius:14px;"></div>
+      <div class="meta"><b>14</b><span>window</span><span>menu · popover</span></div>
+    </div>
+    <div class="tok">
+      <div class="shape win" style="border-radius:22px;"></div>
+      <div class="meta"><b>22</b><span>sheet</span><span>modal · dialog</span></div>
+    </div>
+    <div class="tok">
+      <div class="shape app" style="border-radius:22.37%;"></div>
+      <div class="meta"><b>22.37%</b><span>app icon</span><span>squircle</span></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    Follows Apple HIG conventions. <b>Buttons + inputs</b> share the 8pt radius for consistent edges (HIG bordered-control geometry). <b>Cards</b> step up to 12. <b>Window chrome &amp; popovers</b> = 14 (macOS sheets &amp; menus). <b>Modals/sheets</b> = 22 (matches macOS sheet corner). <b>App icons</b> use the 22.37% squircle ratio — set with <code>--qa-r-app-icon</code>, not px, so the shape scales correctly at every size.
+  </div>
+
+</body></html>

@@ -1,0 +1,86 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;background:var(--qa-bg-2);font-family:var(--qa-font-body);color:var(--qa-fg-1);}
+  body{padding:18px 20px;}
+  .name{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--qa-fg-3);margin:0 0 10px;}
+
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .ease{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:var(--qa-shadow-1);}
+  .ease h4{margin:0 0 4px;font-family:var(--qa-font-mono);font-size:11px;color:var(--qa-fg-1);font-weight:600;}
+  .ease p{margin:0;font-family:var(--qa-font-mono);font-size:10px;color:var(--qa-fg-3);line-height:1.3;}
+  .ease .use{display:block;font-size:10px;color:var(--qa-blue);margin-top:6px;font-weight:600;font-family:var(--qa-font-body);}
+
+  .curve{width:100%;height:60px;margin:8px 0;}
+
+  .ball-row{position:relative;height:42px;background:linear-gradient(90deg,var(--qa-bg-3),var(--qa-bg-3));border-radius:10px;overflow:hidden;margin-top:6px;}
+  .ball{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:99px;background:var(--qa-blue);box-shadow:0 1px 3px rgba(14,17,22,.2);animation:slide var(--dur,1.6s) infinite both;}
+  .ball.out  { animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  .ball.io   { animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  .ball.spr  { animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes slide {
+    0%, 10%   { left: 8px; }
+    50%, 60%  { left: calc(100% - 30px); }
+    100%      { left: 8px; }
+  }
+
+  .durs{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .dur{flex:1;background:var(--qa-blue-100);color:var(--qa-blue);border-radius:8px;padding:8px 12px;font-family:var(--qa-font-mono);font-size:11px;font-weight:600;text-align:center;}
+  .dur small{display:block;color:var(--qa-fg-3);font-weight:400;margin-top:2px;font-size:10px;}
+
+  .principles{margin-top:14px;background:var(--qa-bg-1);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--qa-fg-2);line-height:1.6;box-shadow:var(--qa-shadow-1);}
+  .principles b{color:var(--qa-fg-1);font-weight:600;}
+</style></head>
+<body>
+  <div class="name">Motion · calm settle, not bounce</div>
+
+  <div class="row">
+    <div class="ease">
+      <h4>--qa-ease-out</h4>
+      <p>cubic-bezier(.22, 1, .36, 1)</p>
+      <svg class="curve" viewBox="0 0 100 60" preserveAspectRatio="none">
+        <path d="M0 60 C 22 60 36 0 100 0" stroke="var(--qa-blue)" stroke-width="1.5" fill="none"/>
+        <line x1="0" y1="60" x2="100" y2="60" stroke="var(--qa-line)" stroke-width=".5"/>
+        <line x1="0" y1="0"  x2="100" y2="0"  stroke="var(--qa-line)" stroke-width=".5"/>
+      </svg>
+      <div class="ball-row" style="--dur:2s"><span class="ball out"/></div>
+      <span class="use">Default — 90% of cases</span>
+    </div>
+
+    <div class="ease">
+      <h4>--qa-ease-in-out</h4>
+      <p>cubic-bezier(.65, 0, .35, 1)</p>
+      <svg class="curve" viewBox="0 0 100 60" preserveAspectRatio="none">
+        <path d="M0 60 C 65 60 35 0 100 0" stroke="var(--qa-blue)" stroke-width="1.5" fill="none"/>
+        <line x1="0" y1="60" x2="100" y2="60" stroke="var(--qa-line)" stroke-width=".5"/>
+        <line x1="0" y1="0"  x2="100" y2="0"  stroke="var(--qa-line)" stroke-width=".5"/>
+      </svg>
+      <div class="ball-row" style="--dur:2s"><span class="ball io"/></div>
+      <span class="use">Element moving to a new spot</span>
+    </div>
+
+    <div class="ease">
+      <h4>--qa-ease-spring</h4>
+      <p>cubic-bezier(.34, 1.56, .64, 1)</p>
+      <svg class="curve" viewBox="0 0 100 60" preserveAspectRatio="none">
+        <path d="M0 60 C 34 -34 64 0 100 0" stroke="var(--qa-blue)" stroke-width="1.5" fill="none"/>
+        <line x1="0" y1="60" x2="100" y2="60" stroke="var(--qa-line)" stroke-width=".5"/>
+        <line x1="0" y1="0"  x2="100" y2="0"  stroke="var(--qa-line)" stroke-width=".5"/>
+      </svg>
+      <div class="ball-row" style="--dur:2s"><span class="ball spr"/></div>
+      <span class="use">Notch open · sheet present</span>
+    </div>
+  </div>
+
+  <div class="durs">
+    <div class="dur">120ms<small>fast · hover</small></div>
+    <div class="dur">180ms<small>base · in-place</small></div>
+    <div class="dur">280ms<small>slow · content swap</small></div>
+    <div class="dur">420ms<small>window · sheet</small></div>
+  </div>
+
+  <div class="principles">
+    <b>Reduced-motion respected.</b> Every transition wraps in <code style="font-family:var(--qa-font-mono);">@media (prefers-reduced-motion: reduce)</code> → 0ms. <b>Nothing autoplays.</b> Animations fire only in response to user action — no looping shimmer, no breathing dots. <b>Stagger sparingly</b> at 30ms intervals, max 5 items.
+  </div>
+</body></html>

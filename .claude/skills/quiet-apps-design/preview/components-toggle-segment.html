@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--qa-bg-2);font-family:var(--qa-font-body);color:var(--qa-fg-1);}
+  body{padding:18px 20px;}
+  .grid{display:grid;gap:12px;}
+  .row{display:flex;gap:12px;align-items:center;}
+  .swatch{width:100%;height:64px;border-radius:var(--qa-r-md);box-shadow:inset 0 0 0 1px rgba(14,17,22,0.06);display:flex;align-items:flex-end;justify-content:space-between;padding:8px 10px;}
+  .lbl{font-size:11px;font-weight:600;color:var(--qa-fg-2);}
+  .hex{font-family:var(--qa-font-mono);font-size:11px;color:var(--qa-fg-3);}
+  .name{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--qa-fg-3);margin:0 0 8px;}
+  .card{background:var(--qa-bg-1);border-radius:var(--qa-r-lg);padding:16px;box-shadow:var(--qa-shadow-1);}
+  
+  body{padding:22px;}
+  .seg{display:inline-flex;background:var(--qa-bg-3);padding:3px;border-radius:10px;gap:2px;}
+  .seg button{height:28px;padding:0 14px;border:0;background:transparent;font:600 13px/1 var(--qa-font-body);color:var(--qa-fg-2);border-radius:7px;cursor:pointer;}
+  .seg button.on{background:#fff;color:var(--qa-fg-1);box-shadow:0 1px 2px rgba(14,17,22,.08),0 0 0 1px rgba(14,17,22,.04);}
+  .row{align-items:center;gap:20px;}
+  .sw{width:36px;height:22px;background:var(--qa-blue);border-radius:99px;position:relative;transition:background .12s;}
+  .sw::after{content:"";width:16px;height:16px;background:#fff;border-radius:99px;position:absolute;top:3px;right:3px;box-shadow:0 1px 2px rgba(0,0,0,.18);}
+  .sw.off{background:var(--qa-line-strong);}
+  .sw.off::after{left:3px;right:auto;}
+
+</style></head><body>
+  <div class="name">Segmented · toggle</div>
+  <div class="row">
+    <div class="seg">
+      <button class="on">Ambient</button>
+      <button>Deep</button>
+      <button>Off</button>
+    </div>
+    <div class="sw"></div>
+    <div class="sw off"></div>
+  </div>
+</body></html>

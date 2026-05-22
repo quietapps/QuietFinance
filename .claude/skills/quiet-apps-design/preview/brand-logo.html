@@ -1,0 +1,151 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;background:var(--qa-bg-2);color:var(--qa-fg-1);font-family:var(--qa-font-body);}
+  body{padding:14px 16px;}
+  .eye{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--qa-fg-3);margin:0 0 6px;padding:0 2px;}
+
+  /* ── Primary lockup ── */
+  .stage{background:#fff;border-radius:var(--qa-r-lg);padding:14px 18px;box-shadow:var(--qa-shadow-1);display:flex;align-items:center;}
+  .lockup-h{gap:6px;}
+  .lockup-h img{width:64px;height:64px;flex:none;display:block;}
+  .lockup-h .wm{font-family:var(--qa-font-display);font-weight:700;font-size:42px;letter-spacing:-0.025em;line-height:1;color:var(--qa-fg-1);}
+
+  .lockup-v{flex-direction:column;align-items:center;justify-content:center;padding:14px 12px;gap:6px;}
+  .lockup-v img{width:54px;height:54px;display:block;}
+  .lockup-v .wm-v{font-family:var(--qa-font-display);font-weight:700;font-size:22px;letter-spacing:-0.02em;line-height:.95;color:var(--qa-fg-1);text-align:center;}
+  .lockup-v .wm-v span{display:block;}
+
+  .top-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-bottom:12px;}
+
+  /* ── Variations row ── */
+  .var-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+  .var{background:#fff;border-radius:var(--qa-r-lg);padding:14px;box-shadow:var(--qa-shadow-1);display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .var-cell{width:100%;aspect-ratio:2/1;display:flex;align-items:center;justify-content:center;border-radius:8px;}
+  .var-cell img{width:60px;height:60px;display:block;}
+  .var.solid    .var-cell{background:#fff;box-shadow:inset 0 0 0 1px var(--qa-line);}
+  .var.knockout .var-cell{background:var(--qa-blue);}
+  .var.outline  .var-cell{
+    background:repeating-conic-gradient(#F0F1F4 0% 25%, #fff 0% 50%) 0 0/16px 16px;
+  }
+  .var-lbl{font-size:11px;font-weight:600;color:var(--qa-fg-1);}
+  .var-sub{font-family:var(--qa-font-mono);font-size:10px;color:var(--qa-fg-3);text-align:center;}
+
+  /* ── Sizes row ── */
+  .sizes{background:#fff;border-radius:var(--qa-r-lg);padding:18px 18px 14px;box-shadow:var(--qa-shadow-1);}
+  .sizes-grid{display:flex;align-items:flex-end;gap:24px;justify-content:flex-start;}
+  .size-item{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .size-item img{display:block;}
+  .size-name{font-size:11px;font-weight:600;color:var(--qa-fg-1);}
+  .size-spec{font-family:var(--qa-font-mono);font-size:10px;color:var(--qa-fg-3);}
+
+  /* ── Clear space ── */
+  .clear{background:#fff;border-radius:var(--qa-r-lg);padding:18px;box-shadow:var(--qa-shadow-1);margin-top:12px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;}
+  .clear-frame{
+    position:relative;width:300px;height:120px;
+    background:repeating-conic-gradient(#F0F1F4 0% 25%, #fff 0% 50%) 0 0/16px 16px;
+    border-radius:8px;display:flex;align-items:center;justify-content:center;
+  }
+  .clear-lockup{display:flex;align-items:center;gap:4px;background:#fff;padding:8px;border-radius:6px;}
+  .clear-lockup img{width:36px;height:36px;}
+  .clear-lockup .wm{font-family:var(--qa-font-display);font-weight:700;font-size:24px;letter-spacing:-0.025em;line-height:1;color:var(--qa-fg-1);}
+  .clear-guides{position:absolute;inset:0;border:1px dashed var(--qa-blue);border-radius:8px;pointer-events:none;}
+  .clear-axis{position:absolute;background:var(--qa-blue);}
+  .clear-axis.x{left:0;right:0;height:1px;}
+  .clear-axis.y{top:0;bottom:0;width:1px;}
+  .clear-axis.top    { top:14px; }
+  .clear-axis.bottom { bottom:14px; }
+  .clear-axis.left   { left:22px; }
+  .clear-axis.right  { right:22px; }
+  .clear-axis-lbl{
+    position:absolute;font-family:var(--qa-font-mono);font-size:10px;color:var(--qa-blue);
+    background:#fff;padding:1px 5px;border-radius:3px;
+  }
+  .clear-rules{font-size:12px;color:var(--qa-fg-2);line-height:1.6;}
+  .clear-rules b{color:var(--qa-fg-1);}
+  .clear-rules code{font-family:var(--qa-font-mono);font-size:11px;background:var(--qa-bg-3);padding:1px 5px;border-radius:3px;color:var(--qa-fg-1);}
+</style></head>
+<body>
+
+  <!-- ROW 1: lockups -->
+  <div class="eye">Primary lockup · horizontal + stacked</div>
+  <div class="top-grid">
+    <div class="stage lockup-h">
+      <img src="../assets/logo/quiet-apps-solid.svg" alt="">
+      <div class="wm">quiet apps</div>
+    </div>
+    <div class="stage lockup-v">
+      <img src="../assets/logo/quiet-apps-solid.svg" alt="">
+      <div class="wm-v"><span>quiet</span><span>apps</span></div>
+    </div>
+  </div>
+
+  <!-- ROW 2: variations -->
+  <div class="eye">Icon variations</div>
+  <div class="var-grid">
+    <div class="var solid">
+      <div class="var-cell"><img src="../assets/logo/quiet-apps-solid.svg" alt=""></div>
+      <div class="var-lbl">Solid blue</div>
+      <div class="var-sub">on light surfaces</div>
+    </div>
+    <div class="var knockout">
+      <div class="var-cell"><img src="../assets/logo/quiet-apps-knockout.svg" alt=""></div>
+      <div class="var-lbl">Knockout</div>
+      <div class="var-sub">on brand blue or photo</div>
+    </div>
+    <div class="var outline">
+      <div class="var-cell"><img src="../assets/logo/quiet-apps-outline.svg" alt=""></div>
+      <div class="var-lbl">Outline</div>
+      <div class="var-sub">low-emphasis · watermark</div>
+    </div>
+  </div>
+
+  <!-- ROW 3: sizes -->
+  <div class="eye">Micro-icons + standard web sizes</div>
+  <div class="sizes">
+    <div class="sizes-grid">
+      <div class="size-item">
+        <img src="../assets/logo/quiet-apps-solid.svg" width="16" height="16">
+        <div class="size-name">Micro</div>
+        <div class="size-spec">16 × 16</div>
+      </div>
+      <div class="size-item">
+        <img src="../assets/logo/quiet-apps-solid.svg" width="32" height="32">
+        <div class="size-name">App</div>
+        <div class="size-spec">32 × 32</div>
+      </div>
+      <div class="size-item">
+        <img src="../assets/logo/quiet-apps-solid.svg" width="64" height="64">
+        <div class="size-name">Medium</div>
+        <div class="size-spec">64 × 64</div>
+      </div>
+      <div class="size-item">
+        <img src="../assets/logo/quiet-apps-solid.svg" width="128" height="128">
+        <div class="size-name">Standard web</div>
+        <div class="size-spec">128 × 128</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: clear space -->
+  <div class="eye" style="margin-top:14px;">Minimum clear space</div>
+  <div class="clear">
+    <div class="clear-frame">
+      <div class="clear-lockup">
+        <img src="../assets/logo/quiet-apps-solid.svg" alt="">
+        <div class="wm">quiet apps</div>
+      </div>
+      <div class="clear-axis x top"></div>
+      <div class="clear-axis x bottom"></div>
+      <div class="clear-axis y left"></div>
+      <div class="clear-axis y right"></div>
+      <span class="clear-axis-lbl" style="left:6px;top:6px;">0.2 X</span>
+      <span class="clear-axis-lbl" style="left:28px;top:50%;transform:translateY(-50%);">0.12 X</span>
+    </div>
+    <div class="clear-rules">
+      <b>Don't crowd the mark.</b> Reserve at least <code>0.12 × X</code> of clear space to the left and right, and <code>0.2 × X</code> above and below — where <code>X</code> is the height of the lowercase letterforms in "quiet apps". No type, lines, or other graphics may enter this zone.
+    </div>
+  </div>
+
+</body></html>

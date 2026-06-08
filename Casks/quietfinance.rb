@@ -1,6 +1,6 @@
 cask "quietfinance" do
-  version "3.0.0"
-  sha256 "0d02cdfe1875db6e8d37089f92db6fa0c31aa48051c3d14ff687ff54d7943042"
+  version "3.0.1"
+  sha256 "6d62d5dfbd41c16ee3d773dcbcabd33a416ad412e765d6255f973239753bc083"
 
   url "https://github.com/quietapps/QuietFinance/releases/download/v#{version}/QuietFinance-#{version}.zip",
       verified: "github.com/quietapps/QuietFinance/"
@@ -14,7 +14,7 @@ cask "quietfinance" do
   end
 
   auto_updates false
-  depends_on macos: ">= :tahoe"
+  depends_on macos: :tahoe
 
   app "Quiet Finance.app"
 

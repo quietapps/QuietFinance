@@ -184,7 +184,9 @@ struct DashboardView: View {
         let mean = deltas.reduce(0, +) / Double(deltas.count)
         let variance = deltas.map { ($0 - mean) * ($0 - mean) }.reduce(0, +) / Double(deltas.count)
         let stdev = variance.squareRoot()
-        guard stdev > 0, let lastDelta = deltas.last else { return nil }
+        // Epsilon, not just > 0: with near-identical deltas, rounding noise can
+        // leave a microscopic stdev that inflates sigma into a false anomaly.
+        guard stdev > 1e-6, let lastDelta = deltas.last else { return nil }
         let sigmas = abs(lastDelta - mean) / stdev
         guard sigmas >= 2.0 else { return nil }
         return AnomalyFlag(isGain: lastDelta > mean, deltaPct: abs(lastDelta) * 100, sigmas: sigmas)

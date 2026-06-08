@@ -40,6 +40,7 @@ struct StackedBarsView: View {
     var onHover: (TreemapTile?) -> Void
 
     @State private var hoverSegmentID: UUID?
+    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -139,7 +140,11 @@ struct StackedBarsView: View {
             .overlay(
                 Group {
                     if seg.isDebt {
-                        DiagonalStripes(spacing: 5, lineWidth: 1, color: Color.black.opacity(0.22))
+                        // Stripe must contrast with the bar in both schemes: a
+                        // shaded debt bar is dark in dark mode, so black stripes
+                        // vanish — use light stripes there instead.
+                        DiagonalStripes(spacing: 5, lineWidth: 1,
+                                        color: scheme == .dark ? Color.white.opacity(0.20) : Color.black.opacity(0.22))
                     }
                 }
             )
@@ -148,7 +153,7 @@ struct StackedBarsView: View {
                     if showLabel {
                         Text(compactLabel(seg: seg, width: labelWidth))
                             .font(Typo.mono(10, weight: .semibold))
-                            .foregroundStyle(legibleInk(on: seg.color.opacity(shade)))
+                            .foregroundStyle(legibleInk(for: seg.color, shade: shade, isDebt: seg.isDebt))
                             .lineLimit(1)
                             .padding(.horizontal, 4)
                     }
@@ -178,8 +183,25 @@ struct StackedBarsView: View {
         return steps[idx % steps.count]
     }
 
-    private func legibleInk(on _: Color) -> Color {
-        Color.black.opacity(0.78)
+    /// Pick black or white label ink by the segment's *rendered* luminance.
+    /// Segments are filled at `shade` opacity (debt at `shade * 0.6`) over the
+    /// row background, so the effective brightness depends on the bar color, the
+    /// shade, AND the current scheme — a faint segment is light over a light bg
+    /// but dark over a dark bg. Computing all three keeps labels readable
+    /// everywhere; the old hardcoded black vanished on dark segments.
+    private func legibleInk(for barColor: Color, shade: Double, isDebt: Bool) -> Color {
+        let alpha = isDebt ? shade * 0.6 : shade
+        let bgLum = scheme == .dark ? 0.06 : 0.96
+        let composited = Self.luminance(barColor) * alpha + bgLum * (1 - alpha)
+        return composited > 0.55 ? Color.black.opacity(0.82) : Color.white.opacity(0.92)
+    }
+
+    /// Relative luminance (sRGB) of a SwiftUI color, 0 (black) … 1 (white).
+    private static func luminance(_ c: Color) -> Double {
+        let ns = NSColor(c).usingColorSpace(.sRGB) ?? NSColor(c)
+        return 0.2126 * Double(ns.redComponent)
+             + 0.7152 * Double(ns.greenComponent)
+             + 0.0722 * Double(ns.blueComponent)
     }
 
     private func compactLabel(seg: TreemapTile, width: CGFloat) -> String {

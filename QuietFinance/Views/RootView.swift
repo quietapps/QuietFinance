@@ -25,6 +25,10 @@ struct RootView: View {
             .toolbar(removing: .sidebarToggle)
         } detail: {
             VStack(spacing: 0) {
+                if let reason = QuietFinanceApp.safeModeReason {
+                    SafeModeBanner(reason: reason)
+                        .zIndex(11)
+                }
                 TopBar()
                     .zIndex(10)
                 content
@@ -175,5 +179,45 @@ struct RootView: View {
             .padding(.bottom, bot)
             .frame(maxWidth: 1400, alignment: .topLeading)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+}
+
+/// Non-modal warning shown when the app launched into in-memory safe mode
+/// because the on-disk store couldn't be opened.
+private struct SafeModeBanner: View {
+    let reason: String
+    @EnvironmentObject var app: AppState
+    @State private var dismissed = false
+
+    var body: some View {
+        if !dismissed {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(.white)
+                Text(reason)
+                    .font(Typo.sans(12, weight: .medium))
+                    .foregroundStyle(.white)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 12)
+                Button("Open Settings") { app.selectedScreen = .settings }
+                    .buttonStyle(.plain)
+                    .font(Typo.sans(12, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10).padding(.vertical, 4)
+                    .overlay(Capsule().stroke(.white.opacity(0.6), lineWidth: 1))
+                Button { dismissed = true } label: {
+                    Image(systemName: "xmark").font(.system(size: 10, weight: .bold))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.white.opacity(0.85))
+                .help("Dismiss")
+            }
+            .padding(.horizontal, 16).padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.lLoss)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Safe mode warning. \(reason)")
+        }
     }
 }

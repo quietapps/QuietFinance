@@ -213,7 +213,7 @@ struct EditorialEmpty: View {
                         .frame(width: 132, height: 132)
                     Image(systemName: illustration)
                         .font(.system(size: 50, weight: .light))
-                        .foregroundStyle(Color.lInk3.opacity(0.7))
+                        .foregroundStyle(Color.lInk3)
                 }
                 .padding(.trailing, 8)
                 .padding(.top, 4)
@@ -330,6 +330,9 @@ struct KPICard: View {
         .overlay(RoundedRectangle(cornerRadius: r).stroke(Color.lLine, lineWidth: modern ? 0.5 : 1))
         .clipShape(RoundedRectangle(cornerRadius: r))
         .shadow(color: modern ? Color.black.opacity(0.06) : .clear, radius: 4, x: 0, y: 2)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(label)
+        .accessibilityValue([value, sub, deltaText].compactMap { $0 }.joined(separator: ", "))
     }
 }
 
@@ -478,7 +481,11 @@ struct Pill: View {
     var body: some View {
         let r: CGFloat = modern ? 6 : 999
         let emphBg: Color = modern ? Color.lAccent : Color.lInk
-        let emphFg: Color = Color.white
+        // Classic emphasis bg is `lInk`, which inverts to near-white in dark
+        // mode — white text on it is invisible. Use `lBg` (always the inverse of
+        // `lInk`) so the label reads in both light and dark. Modern bg is the
+        // accent blue, where white stays correct.
+        let emphFg: Color = modern ? Color.white : Color.lBg
         return Text(text)
             .font(Typo.mono(10.5, weight: .medium))
             .padding(.horizontal, 8)

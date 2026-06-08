@@ -666,6 +666,22 @@ struct SettingsView: View {
                             }
                         }
                     }
+                    Divider().overlay(Color.lLine)
+                    settingRow(label: "Inflation rate",
+                               sublabel: "Assumed annual %. Powers the Real-terms toggle on Trends. Set to 0 to hide it.") {
+                        HStack(spacing: 6) {
+                            TextField("0", value: Binding(
+                                get: { app.inflationRatePct },
+                                set: { app.inflationRatePct = min(50, max(0, $0)) }
+                            ), format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .font(Typo.mono(12))
+                            .frame(width: 70)
+                            Text("% / yr")
+                                .font(Typo.sans(12))
+                                .foregroundStyle(Color.lInk3)
+                        }
+                    }
                 }
                 .padding(.horizontal, 18).padding(.vertical, 4)
             }

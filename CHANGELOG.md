@@ -5,7 +5,27 @@ All notable changes to **QuietFinance** (Quiet Finance) are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).  
 Version headings match **semver** derived from **`git log`** (newest-first). Xcode **`MARKETING_VERSION`** reads the same numeric line (e.g. `2.4` ≡ `2.4.0`); **`CURRENT_PROJECT_VERSION`** is the **build**.
 
-## [Unreleased]
+## [3.0.1] - 2026-06-08
+
+### Added
+
+- **Inflation-adjusted (real) net worth** — a "Real %" toggle on Trends restates the whole trajectory into today's purchasing power using an assumed annual inflation rate, so growth can be read in constant dollars. Forecast, CAGR, and range-change KPIs follow the toggle. Rate is configurable in Settings → Inflation rate (default 3%/yr; set to 0 to hide the toggle).
+- **VoiceOver support for KPI cards and the Trends chart** — KPI cards now expose a combined accessibility label/value, and the otherwise-silent Trends chart announces a spoken summary (current value, range change, snapshot count, real/nominal basis).
+
+### Changed
+
+- **Graceful launch on a damaged data file** — if the on-disk store can't be opened (corruption or schema mismatch), the app no longer hard-crashes on every launch. It falls back to a temporary in-memory "safe mode", leaves the on-disk file untouched for recovery, and shows a banner pointing to Settings → restore. Backup/reminder writes are skipped in safe mode so good backups aren't overwritten with a bad store.
+
+### Fixed
+
+- **Theme bugs: currency toggle flipped to dark, and "System" needed two clicks** — the app pinned only the window chrome's appearance imperatively and never set a SwiftUI color scheme, so dynamic color tokens re-resolved against the OS appearance on any re-render (e.g. switching display currency turned content dark while the control still read "Light"). Theme is now driven solely by `preferredColorScheme`, and the imperative `window.appearance` path was removed. The "System" option resolves to the live OS scheme as a concrete `.light`/`.dark` value (via a new `SystemAppearanceObserver`) instead of `nil` — passing `nil` did not re-resolve the dynamic colors in the same render pass, which is why selecting System used to take a second click to take effect; it now lands on the first click and still tracks System Settings changes.
+- **Unreadable "draft" badge in Classic + dark mode** — the emphasized pill used near-white text on a near-white fill (its background token inverts to near-white in dark). The label now uses the background token as its foreground, so it reads in both light and dark.
+- **Low-contrast labels in Classic + dark mode** — allocation bar-segment labels now pick black or white ink from each segment's actual rendered luminance (was hardcoded black, invisible on dark segments); debt-bar diagonal stripes, empty-state illustration icons, and the Reports heatmap empty-cell dash were also lightened for legibility on dark backgrounds.
+- **False anomaly flags on the Dashboard** — the outlier detector now requires a meaningful residual standard deviation (epsilon guard), so floating-point noise across near-identical snapshot deltas can no longer be amplified into a spurious ≥2σ alert.
+
+### Removed
+
+- **Dead Xcode template files** — `Item.swift` and `ContentView.swift` (unused since the app was scaffolded) were deleted.
 
 ---
 

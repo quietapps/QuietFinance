@@ -4,7 +4,12 @@ import SwiftData
 @main
 struct QuietFinanceApp: App {
     let container: ModelContainer
+    /// Set when the on-disk store could not be opened and the app fell back to
+    /// a temporary in-memory container. RootView surfaces this as a banner so
+    /// the user knows their changes won't persist until they recover.
+    static var safeModeReason: String? = nil
     @StateObject private var app = AppState()
+    @StateObject private var systemAppearance = SystemAppearanceObserver()
     @StateObject private var undo = UndoStash()
     @StateObject private var lockGate: AppLockGate = {
         // Default to ON when key absent — matches AppState's AppStorage default.
@@ -17,25 +22,42 @@ struct QuietFinanceApp: App {
     init() {
         FontRegistrar.registerIfNeeded()
         BackupService.applyPendingRestoreIfAny()
+        let schema = Schema([
+            Person.self, Country.self, AssetType.self,
+            Account.self, Snapshot.self, AssetValue.self,
+            Receivable.self, ReceivableValue.self,
+            ExchangeRateHistory.self
+        ])
+        guard let storeURL = BackupService.storeURL() else {
+            fatalError("Could not resolve store URL")
+        }
+        let config = ModelConfiguration(schema: schema, url: storeURL)
+        var safeMode = false
         do {
-            let schema = Schema([
-                Person.self, Country.self, AssetType.self,
-                Account.self, Snapshot.self, AssetValue.self,
-                Receivable.self, ReceivableValue.self,
-                ExchangeRateHistory.self
-            ])
-            guard let storeURL = BackupService.storeURL() else {
-                fatalError("Could not resolve store URL")
-            }
-            let config = ModelConfiguration(schema: schema, url: storeURL)
             container = try ModelContainer(for: schema, configurations: [config])
+        } catch {
+            // A corrupt or schema-incompatible store would otherwise crash-loop
+            // the app on every launch. Fall back to a non-persistent in-memory
+            // container so the app opens, leaving the on-disk file untouched for
+            // recovery (Settings → restore from backup, or manual file fix).
+            safeMode = true
+            Self.safeModeReason = "Your data file couldn’t be opened, so Quiet Finance is running in temporary safe mode. Changes made now will NOT be saved. Your file on disk is untouched — restore a backup from Settings, then relaunch.\n\nDetails: \(error.localizedDescription)"
+            do {
+                let memConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+                container = try ModelContainer(for: schema, configurations: [memConfig])
+            } catch {
+                fatalError("Failed to create in-memory fallback ModelContainer: \(error)")
+            }
+        }
+        if !safeMode {
             SeedData.seedIfEmpty(context: container.mainContext)
             Self.backfillAccountSortIndex(context: container.mainContext)
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
+            // Skip backup/reminder writes in safe mode: the on-disk store is the
+            // corrupt one we deliberately left alone, and we must not overwrite
+            // good backups with it.
+            _ = BackupService.runIfDue()
+            ReminderScheduler.check(context: container.mainContext)
         }
-        _ = BackupService.runIfDue()
-        ReminderScheduler.check(context: container.mainContext)
         DispatchQueue.main.async { [container] in
             // One-time migration: old default was "dusk"; new default is "classic".
             // If user never explicitly changed the icon, silently upgrade them.
@@ -53,6 +75,16 @@ struct QuietFinanceApp: App {
         }
     }
 
+    /// Concrete scheme to force. `.system` resolves to the live OS scheme so the
+    /// switch lands on the first click and still tracks System Settings changes.
+    private var effectiveColorScheme: ColorScheme? {
+        switch app.theme {
+        case .light:  return .light
+        case .dark:   return .dark
+        case .system: return systemAppearance.scheme
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -60,11 +92,7 @@ struct QuietFinanceApp: App {
                     .environmentObject(app)
                     .environmentObject(undo)
                     .environmentObject(lockGate)
-                    .onChange(of: app.theme) { _, newTheme in
-                        applyWindowAppearance(newTheme)
-                    }
                     .onAppear {
-                        applyWindowAppearance(app.theme)
                         if !lockGate.isLocked { lockGate.startIdleMonitorIfConfigured() }
                     }
                     .blur(radius: lockGate.isLocked ? 18 : 0)
@@ -77,6 +105,13 @@ struct QuietFinanceApp: App {
                 }
             }
             .animation(.easeInOut(duration: 0.18), value: lockGate.isLocked)
+            // Single source of truth for theme. Drives the SwiftUI color scheme
+            // (window chrome included) so the dynamic light/dark tokens resolve
+            // deterministically. `.system` resolves to the CONCRETE OS scheme
+            // (never nil) — nil doesn't re-resolve colors in the same pass, which
+            // made selecting System need a second click. Do NOT also set
+            // `window.appearance` imperatively; a second writer races this one.
+            .preferredColorScheme(effectiveColorScheme)
         }
         .modelContainer(container)
         .defaultSize(width: 1400, height: 1000)
@@ -99,18 +134,5 @@ struct QuietFinanceApp: App {
         let sorted = accounts.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         for (i, a) in sorted.enumerated() { a.sortIndex = i + 1 }
         try? context.save()
-    }
-
-    private func applyWindowAppearance(_ theme: AppTheme) {
-        let appearance: NSAppearance? = {
-            switch theme {
-            case .system: return nil
-            case .light:  return NSAppearance(named: .aqua)
-            case .dark:   return NSAppearance(named: .darkAqua)
-            }
-        }()
-        for window in NSApp.windows {
-            window.appearance = appearance
-        }
     }
 }

@@ -17,6 +17,11 @@ final class AppState: ObservableObject {
     @AppStorage("netWorthGoalDate") var netWorthGoalDateTS: Double = 0
     @AppStorage("forecastMethod") var forecastMethodRaw: String = ForecastMethod.linear.rawValue
     @AppStorage("dashboardCompareMode") var dashboardCompareModeRaw: String = "previous"
+    /// Assumed annual inflation rate (%) used to restate history into today's
+    /// purchasing power on Trends. 0 disables real-terms math entirely.
+    @AppStorage("inflationRatePct") var inflationRatePct: Double = 3.0
+    /// When on, Trends shows net worth in real (today's-dollar) terms.
+    @AppStorage("showRealValues") var showRealValues: Bool = false
 
     enum CompareMode: String, CaseIterable, Identifiable {
         case previous, yearAgo

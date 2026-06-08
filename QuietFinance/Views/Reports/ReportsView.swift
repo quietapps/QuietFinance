@@ -642,7 +642,7 @@ struct ReportsView: View {
     private func heatmapEmptyCell() -> some View {
         Text("—")
             .font(Typo.mono(10))
-            .foregroundStyle(Color.lInk4)
+            .foregroundStyle(Color.lInk3)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
             .background(Color.lLine.opacity(0.15))

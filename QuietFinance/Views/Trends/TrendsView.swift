@@ -105,6 +105,8 @@ struct TrendsView: View {
         .onChange(of: seriesMode) { _, _ in recompute() }
         .onChange(of: filters) { _, _ in recompute() }
         .onChange(of: snapshots.count) { _, _ in recompute() }
+        .onChange(of: app.showRealValues) { _, _ in recompute() }
+        .onChange(of: app.inflationRatePct) { _, _ in recompute() }
     }
 
     // MARK: header
@@ -139,6 +141,7 @@ struct TrendsView: View {
                     selection: $seriesMode
                 )
                 Spacer()
+                realTermsToggle
                 filterMenu
             }
 
@@ -203,6 +206,31 @@ struct TrendsView: View {
         .fixedSize()
     }
 
+    /// Nominal ⇄ Real (today's dollars) toggle. Hidden when the inflation rate
+    /// is disabled in Settings, since the math would be a no-op.
+    @ViewBuilder
+    private var realTermsToggle: some View {
+        if app.inflationRatePct > 0 {
+            Button {
+                app.showRealValues.toggle()
+                recompute()
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: app.showRealValues ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 10, weight: .bold))
+                    Text("Real \(String(format: "%.0f", app.inflationRatePct))%")
+                        .font(Typo.sans(12, weight: .medium))
+                }
+                .foregroundStyle(app.showRealValues ? Color.lAccent : Color.lInk2)
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .overlay(Capsule().stroke(app.showRealValues ? Color.lAccent.opacity(0.6) : Color.lLine, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .pointerStyle(.link)
+            .help("Restate net worth in today's purchasing power, assuming \(String(format: "%.1f", app.inflationRatePct))% annual inflation.")
+        }
+    }
+
     private func addFilter(_ key: GroupKey, label: String, match: String) {
         if filters.contains(where: { $0.key == key && $0.matchValue == match }) { return }
         filters.append(Filter(key: key, label: label, matchValue: match))
@@ -245,6 +273,16 @@ struct TrendsView: View {
         }
     }
 
+    /// Spoken summary for VoiceOver, since the chart marks are invisible to it.
+    private var chartA11ySummary: String {
+        guard !cachedSnapshotTotals.isEmpty else { return "No data in the selected range." }
+        let cur = Fmt.currency(cachedCurrentTotal, app.displayCurrency)
+        let dir = cachedDeltaAbs >= 0 ? "up" : "down"
+        let chg = Fmt.currency(abs(cachedDeltaAbs), app.displayCurrency)
+        let basis = app.showRealValues ? " in real terms" : ""
+        return "Currently \(cur)\(basis). \(dir) \(chg) over \(rangeLabel.lowercased()) across \(cachedSnapshotTotals.count) snapshots."
+    }
+
     private var rangeLabel: String {
         switch range {
         case .all: return "All time"
@@ -264,10 +302,15 @@ struct TrendsView: View {
                 chartBody
                     .frame(height: 380)
                     .padding(.top, 4)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(seriesMode == .total ? "Net worth over time" : "Net worth by \(seriesMode.rawValue.lowercased()) over time")
+                    .accessibilityValue(chartA11ySummary)
                 if seriesMode != .total {
                     legend
                 } else {
-                    Text("Hover a snapshot for detail · filter to drill in")
+                    Text(app.showRealValues
+                         ? "Real terms — restated to today's dollars at \(String(format: "%.1f", app.inflationRatePct))% inflation"
+                         : "Hover a snapshot for detail · filter to drill in")
                         .font(Typo.serifItalic(13))
                         .foregroundStyle(Color.lInk3)
                 }
@@ -807,6 +850,15 @@ struct TrendsView: View {
         return true
     }
 
+    /// Multiplier that restates a snapshot's nominal total into real (today's-
+    /// dollar) terms. 1 when real terms are off. Base = latest snapshot overall
+    /// so the current value is unchanged and history scales into today's money.
+    private func realFactor(for date: Date) -> Double {
+        guard app.showRealValues, app.inflationRatePct > 0,
+              let base = snapshots.first?.date else { return 1 }
+        return InflationAdjuster.realFactor(date: date, base: base, annualRatePct: app.inflationRatePct)
+    }
+
     private func recompute() {
         let target = app.displayCurrency
         let inc = app.includeIlliquidInNetWorth
@@ -814,9 +866,11 @@ struct TrendsView: View {
 
         var totals: [SnapshotTotal] = []
         for s in snaps {
+            let factor = realFactor(for: s.date)
             let t = s.totalsValues
                 .filter(passesFilters)
                 .reduce(0.0) { $0 + CurrencyConverter.netDisplayValue(for: $1, in: target, includeIlliquid: inc) }
+                * factor
             totals.append(SnapshotTotal(snapshotID: s.id, date: s.date, label: s.label, total: t))
         }
         cachedSnapshotTotals = totals
@@ -866,12 +920,13 @@ struct TrendsView: View {
         for s in snaps {
             var bucket: [String: Double] = [:]
             var colorByLabel: [String: Color] = [:]
+            let factor = realFactor(for: s.date)
 
             for v in s.totalsValues where passesFilters(v) {
                 guard let acc = v.account else { continue }
                 if !inc && (acc.assetType?.category.isIlliquid ?? false) { continue }
                 let (label, color) = seriesKey(for: acc)
-                bucket[label, default: 0] += CurrencyConverter.netDisplayValue(for: v, in: target, includeIlliquid: inc)
+                bucket[label, default: 0] += CurrencyConverter.netDisplayValue(for: v, in: target, includeIlliquid: inc) * factor
                 colorByLabel[label] = color
             }
 

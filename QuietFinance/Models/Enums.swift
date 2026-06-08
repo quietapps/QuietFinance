@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 enum Currency: String, Codable, CaseIterable, Identifiable {
     case USD, INR
@@ -37,4 +38,17 @@ enum ChartStyle: String, Codable, CaseIterable, Identifiable {
 enum AppTheme: String, Codable, CaseIterable, Identifiable {
     case system, light, dark
     var id: String { rawValue }
+
+    /// SwiftUI scheme to force via `.preferredColorScheme`. `nil` for `.system`
+    /// so the app follows the OS. This is the authoritative driver of which
+    /// light/dark token variant the dynamic colors resolve to — without it the
+    /// dynamic NSColors fall back to `NSApp.effectiveAppearance` (the system
+    /// scheme) on re-render, which flips content out from under a pinned theme.
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light:  return .light
+        case .dark:   return .dark
+        }
+    }
 }

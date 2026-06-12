@@ -3,7 +3,8 @@ import SwiftData
 
 /// ⌘K palette: jump to a screen, switch active snapshot, open an account
 /// or fire a quick action. Keyboard-first — arrow keys navigate, Return
-/// fires the highlighted item, Esc dismisses.
+/// fires the highlighted item, Esc dismisses. Fuzzy-matched, with recents
+/// surfaced on an empty query.
 struct CommandPalette: View {
     @EnvironmentObject var app: AppState
     @Environment(\.dismiss) private var dismiss
@@ -17,10 +18,10 @@ struct CommandPalette: View {
     @State private var selection: Int = 0
     @FocusState private var focused: Bool
 
-    enum Kind: String { case screen, snapshot, account, person, country, action }
+    enum Kind: String { case recent, screen, snapshot, account, person, country, action }
 
     struct Item: Identifiable {
-        let id = UUID()
+        let id: String           // stable — drives recents persistence
         let kind: Kind
         let title: String
         let subtitle: String
@@ -30,27 +31,27 @@ struct CommandPalette: View {
 
     private var allItems: [Item] {
         var out: [Item] = []
-        let allScreens: [(Screen, String, String)] = [
-            (.dashboard, "Net Worth", "house"),
-            (.trends, "Trends", "waveform.path.ecg"),
-            (.snapshots, "Historical · Snapshots", "chart.line.uptrend.xyaxis"),
-            (.diff, "Diff", "arrow.left.arrow.right"),
-            (.reports, "Reports", "doc.text.magnifyingglass"),
-            (.breakdown, "By Allocation", "square.grid.2x2"),
-            (.people, "By Person", "person.2"),
-            (.countries, "By Country", "globe"),
-            (.assetTypes, "By Asset Type", "square.stack.3d.up"),
-            (.accounts, "All Assets", "list.bullet"),
-            (.receivables, "Receivables", "hourglass"),
-            (.settings, "Settings", "gearshape"),
+        let allScreens: [(Screen, String, String, String)] = [
+            (.dashboard, "Net Worth", "house", "screen.dashboard"),
+            (.trends, "Trends", "waveform.path.ecg", "screen.trends"),
+            (.snapshots, "Historical · Snapshots", "chart.line.uptrend.xyaxis", "screen.snapshots"),
+            (.diff, "Diff · Money Flow", "arrow.left.arrow.right", "screen.diff"),
+            (.reports, "Reports", "doc.text.magnifyingglass", "screen.reports"),
+            (.breakdown, "By Allocation", "square.grid.2x2", "screen.breakdown"),
+            (.people, "By Person", "person.2", "screen.people"),
+            (.countries, "By Country", "globe", "screen.countries"),
+            (.assetTypes, "By Asset Type", "square.stack.3d.up", "screen.assetTypes"),
+            (.accounts, "All Assets", "list.bullet", "screen.accounts"),
+            (.receivables, "Receivables", "hourglass", "screen.receivables"),
+            (.settings, "Settings", "gearshape", "screen.settings"),
         ]
-        for (s, label, icon) in allScreens {
-            out.append(Item(kind: .screen, title: label, subtitle: "Screen", icon: icon) {
+        for (s, label, icon, key) in allScreens {
+            out.append(Item(id: key, kind: .screen, title: label, subtitle: "Screen", icon: icon) {
                 app.selectedScreen = s
             })
         }
         for s in snapshots.prefix(40) {
-            out.append(Item(kind: .snapshot, title: s.label,
+            out.append(Item(id: "snapshot.\(s.id.uuidString)", kind: .snapshot, title: s.label,
                            subtitle: "Snapshot · \(Fmt.date(s.date))",
                            icon: s.isLocked ? "lock.fill" : "pencil") {
                 app.activeSnapshotID = s.id
@@ -60,15 +61,16 @@ struct CommandPalette: View {
         for a in accounts.prefix(80) {
             let det = [a.person?.name, a.assetType?.name, a.country?.name]
                 .compactMap { $0 }.joined(separator: " · ")
-            out.append(Item(kind: .account, title: a.name,
+            out.append(Item(id: "account.\(a.id.uuidString)", kind: .account, title: a.name,
                            subtitle: "Account · \(det)",
                            icon: "creditcard") {
                 app.pendingFocusAccountID = a.id
                 app.selectedScreen = .accounts
+                app.touchRecent(.account, id: a.id, label: a.name)
             })
         }
         for p in people {
-            out.append(Item(kind: .person, title: p.name,
+            out.append(Item(id: "person.\(p.id.uuidString)", kind: .person, title: p.name,
                            subtitle: "Person · \(p.accounts.count) accounts",
                            icon: "person.crop.circle") {
                 app.pendingFocusPersonID = p.id
@@ -76,21 +78,65 @@ struct CommandPalette: View {
             })
         }
         for c in countries {
-            out.append(Item(kind: .country, title: "\(c.flag) \(c.name)",
+            out.append(Item(id: "country.\(c.id.uuidString)", kind: .country, title: "\(c.flag) \(c.name)",
                            subtitle: "Country · \(c.code)",
                            icon: "flag") {
                 app.pendingFocusCountryID = c.id
                 app.selectedScreen = .countries
             })
         }
-        // Actions
-        out.append(Item(kind: .action, title: "New Snapshot",
+        out.append(contentsOf: actionItems)
+        return out
+    }
+
+    private var actionItems: [Item] {
+        var out: [Item] = []
+        out.append(Item(id: "action.newSnapshot", kind: .action, title: "New Snapshot",
                        subtitle: "Action · capture this quarter",
                        icon: "plus.circle") {
             app.newSnapshotRequested = true
             app.selectedScreen = .snapshots
         })
-        out.append(Item(kind: .action, title: "Open Settings",
+        out.append(Item(id: "action.newAccount", kind: .action, title: "New Account",
+                       subtitle: "Action · add an asset or liability",
+                       icon: "plus.rectangle.on.rectangle") {
+            app.newAccountRequested = true
+            app.selectedScreen = .accounts
+        })
+        out.append(Item(id: "action.toggleTheme", kind: .action, title: "Toggle Theme",
+                       subtitle: "Action · system → light → dark",
+                       icon: "circle.lefthalf.filled") {
+            switch app.theme {
+            case .system: app.theme = .light
+            case .light:  app.theme = .dark
+            case .dark:   app.theme = .system
+            }
+        })
+        out.append(Item(id: "action.toggleStealth", kind: .action,
+                       title: app.stealthMode ? "Disable Stealth Mode" : "Enable Stealth Mode",
+                       subtitle: "Action · blur every amount",
+                       icon: app.stealthMode ? "eye" : "eye.slash") {
+            app.stealthMode.toggle()
+        })
+        out.append(Item(id: "action.toggleCompact", kind: .action,
+                       title: app.compactMode ? "Disable Compact Mode" : "Enable Compact Mode",
+                       subtitle: "Action · tighter spacing for laptops",
+                       icon: "rectangle.compress.vertical") {
+            app.compactMode.toggle()
+        })
+        out.append(Item(id: "action.exportHistory", kind: .action, title: "Export Full History CSV",
+                       subtitle: "Action · via Settings",
+                       icon: "square.and.arrow.up") {
+            app.pendingSettingsAction = .exportHistoryCSV
+            app.selectedScreen = .settings
+        })
+        out.append(Item(id: "action.importCSV", kind: .action, title: "Import CSV…",
+                       subtitle: "Action · via Settings",
+                       icon: "square.and.arrow.down") {
+            app.pendingSettingsAction = .importCSV
+            app.selectedScreen = .settings
+        })
+        out.append(Item(id: "action.openSettings", kind: .action, title: "Open Settings",
                        subtitle: "Action",
                        icon: "gearshape") {
             app.selectedScreen = .settings
@@ -98,13 +144,46 @@ struct CommandPalette: View {
         return out
     }
 
+    /// Empty query → recents (palette actions + entity recents), then a short
+    /// default list. Non-empty → fuzzy-ranked.
     private var filtered: [Item] {
-        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !q.isEmpty else { return Array(allItems.prefix(20)) }
-        return allItems.filter {
-            $0.title.lowercased().contains(q)
-                || $0.subtitle.lowercased().contains(q)
-        }.prefix(40).map { $0 }
+        let q = query.trimmingCharacters(in: .whitespaces)
+        let items = allItems
+        guard !q.isEmpty else {
+            var out: [Item] = []
+            var seen = Set<String>()
+            let byID = Dictionary(items.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
+            for actionID in app.paletteRecentActionIDs {
+                if let item = byID[actionID], !seen.contains(item.id) {
+                    out.append(recentBadged(item)); seen.insert(item.id)
+                }
+            }
+            for recent in app.recentItems {
+                let key = "\(recent.kind.rawValue).\(recent.entityID.uuidString)"
+                if let item = byID[key], !seen.contains(item.id) {
+                    out.append(recentBadged(item)); seen.insert(item.id)
+                }
+            }
+            for item in items where !seen.contains(item.id) {
+                out.append(item); seen.insert(item.id)
+                if out.count >= 20 { break }
+            }
+            return out
+        }
+        return items
+            .compactMap { item -> (Item, Double)? in
+                FuzzyMatch.score(query: q, candidate: "\(item.title) \(item.subtitle)")
+                    .map { (item, $0) }
+            }
+            .sorted { $0.1 > $1.1 }
+            .prefix(40)
+            .map { $0.0 }
+    }
+
+    private func recentBadged(_ item: Item) -> Item {
+        Item(id: item.id, kind: .recent, title: item.title,
+             subtitle: item.subtitle, icon: "clock.arrow.circlepath",
+             action: item.action)
     }
 
     var body: some View {
@@ -113,7 +192,7 @@ struct CommandPalette: View {
                 Image(systemName: "command")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Color.lInk3)
-                TextField("Jump to…", text: $query)
+                TextField("Jump to anything — screens, accounts, actions…", text: $query)
                     .textFieldStyle(.plain)
                     .font(Typo.sans(15))
                     .foregroundStyle(Color.lInk)
@@ -199,7 +278,9 @@ struct CommandPalette: View {
     private func fire() {
         let items = filtered
         guard !items.isEmpty, selection >= 0, selection < items.count else { return }
-        items[selection].action()
+        let item = items[selection]
+        if item.id.hasPrefix("action.") { app.touchPaletteAction(item.id) }
+        item.action()
         dismiss()
     }
 

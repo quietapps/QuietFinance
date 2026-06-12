@@ -27,6 +27,7 @@ struct KPIGridPanel: View {
                 deltaText: kpiDeltaText(cur: cur.liquid, ref: refLiquid),
                 deltaUp: cur.liquid >= (refLiquid ?? cur.liquid)
             )
+            .copyable(value: String(format: "%.2f", cur.liquid))
             KPICard(
                 label: "Invested",
                 value: Fmt.compact(cur.invested, app.displayCurrency),
@@ -34,6 +35,7 @@ struct KPIGridPanel: View {
                 deltaText: kpiDeltaText(cur: cur.invested, ref: refInvested),
                 deltaUp: cur.invested >= (refInvested ?? cur.invested)
             )
+            .copyable(value: String(format: "%.2f", cur.invested))
             KPICard(
                 label: "Retirement",
                 value: Fmt.compact(cur.retirement + cur.insurance, app.displayCurrency),
@@ -41,6 +43,7 @@ struct KPIGridPanel: View {
                 deltaText: kpiDeltaText(cur: cur.retirement + cur.insurance, ref: refRetIns),
                 deltaUp: (cur.retirement + cur.insurance) >= (refRetIns ?? (cur.retirement + cur.insurance))
             )
+            .copyable(value: String(format: "%.2f", cur.retirement + cur.insurance))
             KPICard(
                 label: "Debt",
                 value: Fmt.compact(abs(cur.debt), app.displayCurrency),
@@ -49,6 +52,7 @@ struct KPIGridPanel: View {
                 deltaText: kpiDeltaText(cur: cur.debt, ref: refDebt),
                 deltaUp: cur.debt >= (refDebt ?? cur.debt)
             )
+            .copyable(value: String(format: "%.2f", abs(cur.debt)))
         }
     }
 

@@ -126,6 +126,16 @@ struct AccountsView: View {
         .onAppear {
             recomputeTrends()
             consumePendingFocus()
+            if app.newAccountRequested {
+                app.newAccountRequested = false
+                creatingNew = true
+            }
+        }
+        .onChange(of: app.newAccountRequested) { _, requested in
+            if requested {
+                app.newAccountRequested = false
+                creatingNew = true
+            }
         }
         .onChange(of: app.pendingFocusAccountID) { _, _ in consumePendingFocus() }
         .onChange(of: editing?.id) { _, id in

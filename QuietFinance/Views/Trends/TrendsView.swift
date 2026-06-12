@@ -98,15 +98,41 @@ struct TrendsView: View {
                 }
             }
         }
-        .onAppear { recompute() }
+        .onAppear {
+            if filters.isEmpty { restoreLastUsed() }
+            recompute()
+        }
         .onChange(of: app.displayCurrency) { _, _ in recompute() }
         .onChange(of: app.includeIlliquidInNetWorth) { _, _ in recompute() }
-        .onChange(of: range) { _, _ in recompute() }
-        .onChange(of: seriesMode) { _, _ in recompute() }
-        .onChange(of: filters) { _, _ in recompute() }
+        .onChange(of: range) { _, _ in persistLastUsed(); recompute() }
+        .onChange(of: seriesMode) { _, _ in persistLastUsed(); recompute() }
+        .onChange(of: filters) { _, _ in persistLastUsed(); recompute() }
         .onChange(of: snapshots.count) { _, _ in recompute() }
         .onChange(of: app.showRealValues) { _, _ in recompute() }
         .onChange(of: app.inflationRatePct) { _, _ in recompute() }
+    }
+
+    // MARK: filter persistence + presets
+
+    private func restoreLastUsed() {
+        guard let payload = FilterPresets.lastUsed(forScreen: "trends") else { return }
+        apply(payload)
+    }
+
+    private func persistLastUsed() {
+        FilterPresets.saveLastUsed(currentPayload(), forScreen: "trends")
+    }
+
+    private func currentPayload() -> FilterPresets.Payload {
+        FilterPresets.Payload(filters: FilterPresets.defs(from: filters),
+                              range: range.rawValue,
+                              seriesMode: seriesMode.rawValue)
+    }
+
+    private func apply(_ payload: FilterPresets.Payload) {
+        if let r = payload.range.flatMap(TrendRange.init(rawValue:)) { range = r }
+        if let s = payload.seriesMode.flatMap(TrendSeries.init(rawValue:)) { seriesMode = s }
+        filters = FilterPresets.filters(from: payload.filters)
     }
 
     // MARK: header
@@ -142,6 +168,9 @@ struct TrendsView: View {
                 )
                 Spacer()
                 realTermsToggle
+                FilterPresetMenu(screen: "trends",
+                                 currentPayload: currentPayload,
+                                 onApply: { apply($0) })
                 filterMenu
             }
 

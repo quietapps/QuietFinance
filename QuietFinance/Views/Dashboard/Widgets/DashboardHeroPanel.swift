@@ -51,6 +51,7 @@ struct DashboardHeroPanel: View {
                         .minimumScaleFactor(0.6)
                 }
                 .stealthAmount()
+                .copyable(value: String(format: "%.2f", curTotal))
 
                 inlineDeltaChip
                     .stealthAmount()

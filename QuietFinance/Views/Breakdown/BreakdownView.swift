@@ -78,16 +78,41 @@ struct BreakdownView: View {
         .sheet(item: $historyAccount) { AccountHistoryView(account: $0) }
         .sheet(item: $detailAccount) { AccountDetailSheet(account: $0) }
         .onAppear {
+            // A pending dashboard tap-through wins over restoring last-used.
+            if app.pendingBreakdownFilter == nil && filters.isEmpty {
+                restoreLastUsed()
+            }
             consumePending()
             recompute()
         }
         .onChange(of: app.pendingBreakdownFilter) { _, _ in consumePending() }
         .onChange(of: app.activeSnapshotID) { _, _ in recompute() }
         .onChange(of: app.displayCurrency) { _, _ in recompute() }
-        .onChange(of: groupBy) { _, _ in recompute() }
-        .onChange(of: filters) { _, _ in recompute() }
+        .onChange(of: groupBy) { _, _ in persistLastUsed(); recompute() }
+        .onChange(of: filters) { _, _ in persistLastUsed(); recompute() }
         .onChange(of: snapshots.count) { _, _ in recompute() }
         .onChange(of: app.includeIlliquidInNetWorth) { _, _ in recompute() }
+    }
+
+    // MARK: filter persistence + presets
+
+    private func restoreLastUsed() {
+        guard let payload = FilterPresets.lastUsed(forScreen: "breakdown") else { return }
+        apply(payload)
+    }
+
+    private func persistLastUsed() {
+        FilterPresets.saveLastUsed(currentPayload(), forScreen: "breakdown")
+    }
+
+    private func currentPayload() -> FilterPresets.Payload {
+        FilterPresets.Payload(groupBy: groupBy.rawValue,
+                              filters: FilterPresets.defs(from: filters))
+    }
+
+    private func apply(_ payload: FilterPresets.Payload) {
+        if let g = payload.groupBy.flatMap(GroupKey.init(rawValue:)) { groupBy = g }
+        filters = FilterPresets.filters(from: payload.filters)
     }
 
     private func consumePending() {
@@ -139,6 +164,9 @@ struct BreakdownView: View {
                     .foregroundStyle(Color.lInk)
                 }
                 Spacer()
+                FilterPresetMenu(screen: "breakdown",
+                                 currentPayload: currentPayload,
+                                 onApply: { apply($0) })
                 SegControl<GroupKey>(
                     options: GroupKey.allCases.map { (label: $0.rawValue, value: $0) },
                     selection: $groupBy
@@ -475,6 +503,11 @@ struct BreakdownView: View {
                     .padding(.vertical, 10)
                     .background(i.isMultiple(of: 2) ? Color.clear : Color.lSunken.opacity(0.5))
                     .contentShape(Rectangle())
+                    .copyable(value: String(format: "%.2f", r.display),
+                              row: [r.name, r.person, r.countryName, r.assetType,
+                                    r.currency.rawValue,
+                                    String(format: "%.2f", r.nativeValue),
+                                    String(format: "%.2f", r.display)].joined(separator: ","))
                     .onTapGesture(count: 2) {
                         if let acc = accounts.first(where: { $0.id == r.accountID }) {
                             detailAccount = acc

@@ -29,6 +29,13 @@ struct SettingsView: View {
     @State private var showingImportPicker = false
     @State private var importResult: String?
     @State private var importIsError: Bool = false
+    @State private var importPreview: ImportPreviewPayload?
+
+    private struct ImportPreviewPayload: Identifiable {
+        let id = UUID()
+        let text: String
+        let preview: CSVImporter.Preview
+    }
     @AppStorage("autoBackupEnabled")   private var autoBackupEnabled: Bool = true
     @AppStorage("autoBackupInterval")  private var autoBackupIntervalRaw: String = BackupInterval.weekly.rawValue
     @AppStorage("autoBackupKeep")      private var autoBackupKeep: Int = 10
@@ -70,6 +77,8 @@ struct SettingsView: View {
         }
         .frame(maxWidth: 980, alignment: .center)
         .frame(maxWidth: .infinity, alignment: .top)
+        .onAppear { consumePendingSettingsAction() }
+        .onChange(of: app.pendingSettingsAction) { _, _ in consumePendingSettingsAction() }
         .task { await backupsCache.loadIfNeeded() }
         .task(id: backupsTick) {
             guard backupsTick > 0 else { return }
@@ -126,6 +135,16 @@ struct SettingsView: View {
                 .keyboardShortcut(.defaultAction)
         } message: {
             Text(importResult ?? "")
+        }
+        .sheet(item: $importPreview) { payload in
+            ImportPreviewSheet(
+                preview: payload.preview,
+                onConfirm: {
+                    importPreview = nil
+                    commitImport(payload.text)
+                },
+                onCancel: { importPreview = nil }
+            )
         }
         .fileExporter(
             isPresented: Binding(
@@ -1042,13 +1061,7 @@ struct SettingsView: View {
                         icon: "tablecells",
                         title: "Full history",
                         subtitle: "Flat · all snapshots × accounts"
-                    ) {
-                        let text = CSVExporter.flatAssetValues(snapshots: snapshots)
-                        pendingExport = PendingExport(
-                            document: CSVDocument(text: text),
-                            defaultFilename: "finance_history_\(datestamp()).csv"
-                        )
-                    }
+                    ) { exportFullHistory() }
                     exportRow(
                         icon: "creditcard",
                         title: "Accounts list",
@@ -1270,12 +1283,44 @@ struct SettingsView: View {
         }
     }
 
+    private func exportFullHistory() {
+        let text = CSVExporter.flatAssetValues(snapshots: snapshots)
+        pendingExport = PendingExport(
+            document: CSVDocument(text: text),
+            defaultFilename: "finance_history_\(datestamp()).csv"
+        )
+    }
+
+    /// Command-palette requests routed here because SettingsView owns the
+    /// file panels.
+    private func consumePendingSettingsAction() {
+        guard let action = app.pendingSettingsAction else { return }
+        app.pendingSettingsAction = nil
+        switch action {
+        case .exportHistoryCSV: exportFullHistory()
+        case .importCSV:        showingImportPicker = true
+        }
+    }
+
+    /// Phase 1: read + parse + preview. The actual import happens only after
+    /// the user confirms in ImportPreviewSheet.
     @MainActor
     private func performImport(_ url: URL) {
         let accessed = url.startAccessingSecurityScopedResource()
         defer { if accessed { url.stopAccessingSecurityScopedResource() } }
         do {
             let text = try String(contentsOf: url, encoding: .utf8)
+            let preview = try CSVImporter.preview(csv: text, context: context)
+            importPreview = ImportPreviewPayload(text: text, preview: preview)
+        } catch {
+            importIsError = true
+            importResult = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func commitImport(_ text: String) {
+        do {
             let report = try CSVImporter.importAuto(csv: text, context: context)
             if report.rowsRejected > 0 || !report.errors.isEmpty {
                 // Surface exactly which lines failed instead of a bare count.

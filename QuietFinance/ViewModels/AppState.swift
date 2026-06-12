@@ -157,9 +157,30 @@ final class AppState: ObservableObject {
     @Published var selectedScreen: Screen = .dashboard
     @Published var activeSnapshotID: UUID? = nil
     @Published var newSnapshotRequested: Bool = false
+    @Published var newAccountRequested: Bool = false
     @Published var pendingBreakdownFilter: PendingFilter? = nil
     @Published var globalSearchFocusTick: Int = 0
     @Published var commandPaletteOpen: Bool = false
+
+    /// Set by the command palette to ask SettingsView (which owns the file
+    /// panels) to run an export/import flow after navigation.
+    enum SettingsAction: String { case exportHistoryCSV, importCSV }
+    @Published var pendingSettingsAction: SettingsAction? = nil
+
+    /// Stable palette action ids fired recently, comma-separated, newest first.
+    @AppStorage("paletteRecentActionIDs") var paletteRecentActionIDsRaw: String = ""
+
+    var paletteRecentActionIDs: [String] {
+        paletteRecentActionIDsRaw.split(separator: ",").map(String.init)
+    }
+
+    func touchPaletteAction(_ id: String) {
+        var list = paletteRecentActionIDs
+        list.removeAll { $0 == id }
+        list.insert(id, at: 0)
+        if list.count > 6 { list = Array(list.prefix(6)) }
+        paletteRecentActionIDsRaw = list.joined(separator: ",")
+    }
 
     /// Set by GlobalSearchField to request that a manage view open the editor
     /// sheet for a specific entity ID after navigation. Each manage view

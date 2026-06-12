@@ -50,6 +50,125 @@ enum CSVImporter {
         }
     }
 
+    // MARK: - Preview (no inserts, no saves)
+
+    enum DetectedFormat: String {
+        case fullHistory = "Full history"
+        case accountsList = "Accounts list"
+    }
+
+    struct Preview {
+        let format: DetectedFormat
+        let header: [String]
+        let dataRowCount: Int
+        let validRowCount: Int
+        let sampleRows: [[String]]
+        let issues: [String]
+        let estimatedNewSnapshots: Int
+        let estimatedNewAccounts: Int
+        let estimatedNewPeople: Int
+    }
+
+    /// Syntactic dry run: detects the format, validates each row with the
+    /// same guards the importers apply, and estimates what would be created —
+    /// without touching the store.
+    static func preview(csv: String, context: ModelContext) throws -> Preview {
+        let rows = try parseCSV(csv)
+        guard rows.count >= 2, let first = rows.first else { throw ImportError.emptyFile }
+        let header = first.map { $0.trimmingCharacters(in: .whitespaces) }
+        let data = Array(rows.dropFirst())
+
+        let format: DetectedFormat
+        if header.contains("snapshot_date") {
+            format = .fullHistory
+        } else if header.contains("name") && header.contains("asset_type") && header.contains("country_code") {
+            format = .accountsList
+        } else {
+            throw ImportError.unknownFormat
+        }
+
+        func col(_ name: String) -> Int? { header.firstIndex(of: name) }
+        func cell(_ row: [String], _ i: Int?) -> String {
+            guard let i, row.count > i else { return "" }
+            return row[i].trimmingCharacters(in: .whitespaces)
+        }
+
+        let existingPeople = Set(((try? context.fetch(FetchDescriptor<Person>())) ?? []).map { $0.name.lowercased() })
+        let existingAccounts = Set(((try? context.fetch(FetchDescriptor<Account>())) ?? []).map { $0.name.lowercased() })
+        let existingSnapDates = Set(((try? context.fetch(FetchDescriptor<Snapshot>())) ?? [])
+            .map { Calendar.current.startOfDay(for: $0.date) })
+
+        let dateFmt = DateFormatter()
+        dateFmt.dateFormat = "yyyy-MM-dd"
+
+        var issues: [String] = []
+        var valid = 0
+        var newSnapDates = Set<Date>()
+        var newAccounts = Set<String>()
+        var newPeople = Set<String>()
+
+        for (ri, row) in data.enumerated() {
+            if row.allSatisfy({ $0.trimmingCharacters(in: .whitespaces).isEmpty }) { continue }
+            let lineNum = ri + 2
+            guard row.count >= header.count else {
+                issues.append("Line \(lineNum): too few columns.")
+                continue
+            }
+            switch format {
+            case .fullHistory:
+                let dateStr = cell(row, col("snapshot_date"))
+                guard let date = dateFmt.date(from: dateStr).map({ Calendar.current.startOfDay(for: $0) }) else {
+                    issues.append("Line \(lineNum): invalid date “\(dateStr)”.")
+                    continue
+                }
+                let accountName = cell(row, col("account_name"))
+                guard !accountName.isEmpty else {
+                    issues.append("Line \(lineNum): empty account_name.")
+                    continue
+                }
+                let ccy = cell(row, col("native_currency"))
+                guard Currency(rawValue: ccy) != nil else {
+                    issues.append("Line \(lineNum): unknown currency “\(ccy)”.")
+                    continue
+                }
+                guard Double(cell(row, col("native_value"))) != nil else {
+                    issues.append("Line \(lineNum): invalid native_value.")
+                    continue
+                }
+                valid += 1
+                if !existingSnapDates.contains(date) { newSnapDates.insert(date) }
+                if !existingAccounts.contains(accountName.lowercased()) { newAccounts.insert(accountName.lowercased()) }
+                let person = cell(row, col("person"))
+                if !person.isEmpty, !existingPeople.contains(person.lowercased()) { newPeople.insert(person.lowercased()) }
+            case .accountsList:
+                let name = cell(row, col("name"))
+                guard !name.isEmpty else {
+                    issues.append("Line \(lineNum): empty name.")
+                    continue
+                }
+                let ccy = cell(row, col("native_currency"))
+                guard Currency(rawValue: ccy) != nil else {
+                    issues.append("Line \(lineNum): unknown currency “\(ccy)”.")
+                    continue
+                }
+                valid += 1
+                if !existingAccounts.contains(name.lowercased()) { newAccounts.insert(name.lowercased()) }
+                let person = cell(row, col("person"))
+                if !person.isEmpty, !existingPeople.contains(person.lowercased()) { newPeople.insert(person.lowercased()) }
+            }
+        }
+
+        return Preview(format: format,
+                       header: header,
+                       dataRowCount: data.count,
+                       validRowCount: valid,
+                       sampleRows: Array(data.prefix(8)),
+                       issues: issues,
+                       estimatedNewSnapshots: newSnapDates.count,
+                       estimatedNewAccounts: newAccounts.count,
+                       estimatedNewPeople: newPeople.count)
+    }
+
     // MARK: - Public entry
 
     /// Auto-detect CSV format (Full history vs Accounts list) and dispatch.

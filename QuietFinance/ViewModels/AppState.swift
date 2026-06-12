@@ -3,7 +3,7 @@ import AppKit
 import Combine
 
 enum Screen: Hashable {
-    case dashboard, breakdown, trends, snapshots, diff, reports, accounts, people, countries, assetTypes, receivables, settings
+    case dashboard, breakdown, trends, snapshots, diff, reports, scenario, accounts, people, countries, assetTypes, receivables, settings
 }
 
 final class AppState: ObservableObject {
@@ -166,6 +166,9 @@ final class AppState: ObservableObject {
     /// panels) to run an export/import flow after navigation.
     enum SettingsAction: String { case exportHistoryCSV, importCSV }
     @Published var pendingSettingsAction: SettingsAction? = nil
+
+    /// Live what-if sandbox. In-memory by design — see ScenarioSession.
+    @Published var scenarioSession: ScenarioSession? = nil
 
     /// Stable palette action ids fired recently, comma-separated, newest first.
     @AppStorage("paletteRecentActionIDs") var paletteRecentActionIDsRaw: String = ""

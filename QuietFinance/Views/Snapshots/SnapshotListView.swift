@@ -195,6 +195,10 @@ struct SnapshotListView: View {
                         Button(pinnedIDs.contains(s.id) ? "Unpin tab" : "Pin as tab") {
                             togglePin(s)
                         }
+                        Button("Fork as scenario…") {
+                            app.scenarioSession = ScenarioSession(forkOf: s)
+                            app.selectedScreen = .scenario
+                        }
                         Button("Export PDF…") { exportSnapshotPDF(s) }
                         Button("Delete…", role: .destructive) { confirmDelete = s }
                     } label: {

@@ -156,6 +156,7 @@ struct RootView: View {
         case .snapshots:  scrollable { SnapshotListView() }
         case .diff:       scrollable { SnapshotDiffView() }
         case .reports:    scrollable { ReportsView() }
+        case .scenario:   scrollable { ScenarioView() }
         case .settings:   scrollable { SettingsView() }
         case .accounts:   paged { AccountsView() }
         case .people:     paged { PeopleView() }

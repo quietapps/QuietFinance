@@ -34,6 +34,7 @@ struct Sidebar: View {
             NavItem(screen: .snapshots, label: "Historical", icon: "chart.line.uptrend.xyaxis"),
             NavItem(screen: .diff, label: "Diff", icon: "arrow.left.arrow.right"),
             NavItem(screen: .reports, label: "Reports", icon: "doc.text.magnifyingglass"),
+            NavItem(screen: .scenario, label: "Scenario", icon: "wand.and.stars"),
         ]),
         NavGroup(section: "Breakdown", items: [
             NavItem(screen: .breakdown, label: "By Allocation", icon: "square.grid.2x2"),

@@ -146,6 +146,15 @@ struct CommandPalette: View {
                        icon: "hand.wave") {
             app.welcomeCompleted = false
         })
+        if let latest = snapshots.first {
+            out.append(Item(id: "action.forkScenario", kind: .action,
+                           title: "Fork Latest Snapshot as Scenario",
+                           subtitle: "Action · what-if sandbox from \(latest.label)",
+                           icon: "wand.and.stars") {
+                app.scenarioSession = ScenarioSession(forkOf: latest)
+                app.selectedScreen = .scenario
+            })
+        }
         return out
     }
 

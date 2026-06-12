@@ -216,6 +216,7 @@ struct TopBar: View {
         case .snapshots:  return "Historical"
         case .diff:       return "Diff"
         case .reports:    return "Reports"
+        case .scenario:   return "Scenario"
         case .accounts:   return "All Assets"
         case .people:     return "By Person"
         case .countries:  return "By Country"

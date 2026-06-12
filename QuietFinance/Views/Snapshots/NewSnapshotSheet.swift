@@ -9,11 +9,10 @@ struct NewSnapshotSheet: View {
     @Query(sort: \Receivable.name) private var receivables: [Receivable]
 
     @State private var date: Date = Calendar.current.startOfDay(for: Date())
-    @State private var rate: Double = 83.0
+    @State private var rates: [String: Double] = [:]
     @State private var copyPrevious: Bool = true
     @State private var notes: String = ""
     @State private var errorMessage: String?
-    @State private var isFetchingRate: Bool = false
     @State private var rateFetchedAt: Date?
     @State private var showUnsavedConfirm = false
     @State private var initialSnapshot: FormSnapshot = FormSnapshot()
@@ -23,13 +22,25 @@ struct NewSnapshotSheet: View {
 
     private struct FormSnapshot: Equatable {
         var date: Date = Date()
-        var rate: Double = 0
+        var rates: [String: Double] = [:]
         var copyPrevious: Bool = true
         var notes: String = ""
     }
 
     private var currentSnapshot: FormSnapshot {
-        FormSnapshot(date: date, rate: rate, copyPrevious: copyPrevious, notes: notes)
+        FormSnapshot(date: date, rates: rates, copyPrevious: copyPrevious, notes: notes)
+    }
+
+    /// Non-USD currencies the new snapshot will need rates for, derived from
+    /// active accounts and active receivables.
+    private var requiredCurrencies: [Currency] {
+        var set = Set<Currency>()
+        for a in accounts where a.isActive { set.insert(a.nativeCurrency) }
+        for r in receivables where r.isActive && r.startDate <= Calendar.current.startOfDay(for: date) {
+            set.insert(r.nativeCurrency)
+        }
+        set.remove(.USD)
+        return set.sorted { $0.rawValue < $1.rawValue }
     }
 
     private var hasChanges: Bool { currentSnapshot != initialSnapshot }
@@ -87,7 +98,13 @@ struct NewSnapshotSheet: View {
         .background(Color.lBg)
         .frame(minWidth: 580)
         .onAppear {
-            if let prev = snapshots.first { rate = prev.usdToInrRate }
+            // Prefill each required currency from the previous snapshot's
+            // frozen table (legacy INR scalar covered by rate(for:)).
+            if let prev = snapshots.first {
+                for c in requiredCurrencies {
+                    if let r = prev.rate(for: c), r > 0 { rates[c.rawValue] = r }
+                }
+            }
             initialSnapshot = currentSnapshot
         }
         .confirmationDialog("Save changes before closing?", isPresented: $showUnsavedConfirm) {
@@ -125,26 +142,11 @@ struct NewSnapshotSheet: View {
                     .datePickerStyle(.field)
             }
 
-            field(label: "USD → INR rate") {
-                HStack(spacing: 6) {
-                    TextField("", value: $rate, format: .number)
-                        .textFieldStyle(.roundedBorder)
-                        .font(Typo.mono(13))
-                    Button {
-                        Task { await fetchLiveRate() }
-                    } label: {
-                        if isFetchingRate {
-                            ProgressView().controlSize(.small)
-                        } else {
-                            Image(systemName: "arrow.down.circle")
-                        }
-                    }
-                    .disabled(isFetchingRate)
-                    .buttonStyle(.plain)
-                    .pointerStyle(.link)
-                    .help("Fetch live rate for chosen date")
-                    .foregroundStyle(Color.lInk2)
-                }
+            field(label: "Exchange rates") {
+                RatesEditor(currencies: requiredCurrencies,
+                            rates: $rates,
+                            date: date,
+                            onRatesFetched: { rateFetchedAt = Date() })
             }
 
             Toggle(isOn: $copyPrevious) {
@@ -199,7 +201,7 @@ struct NewSnapshotSheet: View {
                 Text("Heads up")
                     .font(Typo.sans(12, weight: .semibold))
                     .foregroundStyle(Color.lInk)
-                Text("Exchange rates are immutable once locked. The rate set here is used for every balance entered in this snapshot.")
+                Text("Exchange rates are immutable once locked. The rates set here are used for every balance entered in this snapshot.")
                     .font(Typo.sans(12))
                     .foregroundStyle(Color.lInk2)
                     .lineSpacing(2)
@@ -210,20 +212,6 @@ struct NewSnapshotSheet: View {
         .background(Color.lSunken)
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lLine, lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-
-    @MainActor
-    private func fetchLiveRate() async {
-        isFetchingRate = true
-        defer { isFetchingRate = false }
-        do {
-            let r = try await FXService.fetchUSDtoINR(on: date)
-            rate = r
-            rateFetchedAt = Date()
-            errorMessage = nil
-        } catch {
-            errorMessage = "Fetch failed: \(error.localizedDescription). Enter rate manually."
-        }
     }
 
     private func create() {
@@ -241,12 +229,16 @@ struct NewSnapshotSheet: View {
                 return
             }
         }
-        if rate <= 0 {
-            errorMessage = "Exchange rate must be positive."
+        let missing = requiredCurrencies.filter { (rates[$0.rawValue] ?? 0) <= 0 }
+        if !missing.isEmpty {
+            errorMessage = "Missing rate for \(missing.map(\.rawValue).joined(separator: ", ")). Fetch or enter manually."
             return
         }
 
-        let snap = Snapshot(date: chosen, label: Fmt.date(chosen), usdToInrRate: rate, notes: notes)
+        let snap = Snapshot(date: chosen, label: Fmt.date(chosen),
+                            usdToInrRate: rates["INR"] ?? 0, notes: notes)
+        let positiveRates = rates.filter { $0.value > 0 }
+        if !positiveRates.isEmpty { snap.ratesPerUSD = positiveRates }
         context.insert(snap)
 
         let previous = snapshots.first

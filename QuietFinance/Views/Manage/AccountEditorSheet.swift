@@ -94,9 +94,22 @@ struct AccountEditorSheet: View {
                 }
 
                 Picker("Native Currency", selection: $nativeCurrency) {
-                    ForEach(Currency.allCases) { Text($0.rawValue).tag($0) }
+                    ForEach(Currency.allCases) { Text("\($0.rawValue) — \($0.displayName)").tag($0) }
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.menu)
+
+                if let a = existing, nativeCurrency != a.nativeCurrency {
+                    let lockedMissing = a.values
+                        .compactMap(\.snapshot)
+                        .filter { $0.isLocked && ($0.rate(for: nativeCurrency) ?? 0) <= 0 }
+                        .count
+                    if lockedMissing > 0 {
+                        Label("\(lockedMissing) locked \(lockedMissing == 1 ? "snapshot has" : "snapshots have") no \(nativeCurrency.rawValue) rate — historical values for this account won’t convert there until you unlock and add one.",
+                              systemImage: "exclamationmark.triangle")
+                            .font(Typo.sans(11))
+                            .foregroundStyle(Color.lLoss)
+                    }
+                }
 
                 TextField("Institution (optional)", text: $institution)
                 TextField("Notes (optional)", text: $notes)
@@ -235,6 +248,11 @@ struct AccountEditorSheet: View {
         }
 
         if let a = existing {
+            // Currency change reinterprets every historical value — cached
+            // snapshot totals are stale.
+            if a.nativeCurrency != nativeCurrency {
+                a.values.compactMap(\.snapshot).forEach(SnapshotCache.invalidate)
+            }
             a.name = trimmed
             a.person = p
             a.country = c

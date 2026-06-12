@@ -16,6 +16,15 @@ struct TopBar: View {
         let defaultFilename: String
     }
 
+    /// Currencies held by accounts, plus USD/INR staples, for the picker's
+    /// priority section.
+    private var currenciesInUse: [Currency] {
+        var set = Set(accounts.map(\.nativeCurrency))
+        set.insert(.USD)
+        set.insert(.INR)
+        return set.sorted { $0.rawValue < $1.rawValue }
+    }
+
     var body: some View {
         HStack(spacing: 10) {
             crumbs
@@ -26,12 +35,12 @@ struct TopBar: View {
 
             snapshotChip
 
-            SegControl<Currency>(
-                options: Currency.allCases.map { (label: $0.rawValue, value: $0) },
+            CurrencyPicker(
                 selection: Binding(
                     get: { app.displayCurrency },
                     set: { app.displayCurrency = $0 }
-                )
+                ),
+                inUse: currenciesInUse
             )
 
             SegControl<AppTheme>(

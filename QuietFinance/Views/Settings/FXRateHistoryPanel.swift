@@ -4,6 +4,7 @@ import Charts
 struct FXRateHistoryPanel: View {
     let snapshots: [Snapshot]
     @State private var hovered: RatePoint?
+    @State private var selected: Currency = .INR
 
     struct RatePoint: Identifiable, Equatable {
         let id = UUID()
@@ -12,16 +13,47 @@ struct FXRateHistoryPanel: View {
         let rate: Double
     }
 
+    private var sym: String { selected.symbol }
+
+    /// Currencies with at least one frozen rate across snapshots.
+    private var availableCurrencies: [Currency] {
+        var set = Set<Currency>()
+        for s in snapshots {
+            for code in s.ratesPerUSD.keys {
+                if let c = Currency(rawValue: code) { set.insert(c) }
+            }
+            if s.usdToInrRate > 0 { set.insert(.INR) }
+        }
+        return set.sorted { $0.rawValue < $1.rawValue }
+    }
+
     private var series: [RatePoint] {
-        snapshots.sorted { $0.date < $1.date }.map {
-            RatePoint(date: $0.date, label: $0.label, rate: $0.usdToInrRate)
+        snapshots.sorted { $0.date < $1.date }.compactMap { s in
+            guard let r = s.rate(for: selected), r > 0 else { return nil }
+            return RatePoint(date: s.date, label: s.label, rate: r)
         }
     }
 
     var body: some View {
         Panel {
             VStack(spacing: 0) {
-                PanelHead(title: "USD → INR", meta: meta)
+                HStack {
+                    Text("USD → \(selected.rawValue)")
+                        .font(Typo.sans(14, weight: .semibold))
+                        .foregroundStyle(Color.lInk)
+                    Spacer()
+                    Text(meta)
+                        .font(Typo.sans(12))
+                        .foregroundStyle(Color.lInk3)
+                    if availableCurrencies.count > 1 {
+                        CurrencyPicker(selection: $selected,
+                                       inUse: availableCurrencies,
+                                       help: "Charted currency")
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 12)
+                .overlay(Rectangle().frame(height: 1).foregroundStyle(Color.lLine), alignment: .bottom)
                 content
             }
         }
@@ -55,7 +87,7 @@ struct FXRateHistoryPanel: View {
     private func singlePointView(_ p: RatePoint) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("₹")
+                Text(sym)
                     .font(Typo.serifNum(20))
                     .foregroundStyle(Color.lInk3)
                 Text(String(format: "%.4f", p.rate))
@@ -81,9 +113,9 @@ struct FXRateHistoryPanel: View {
             let avg = rates.reduce(0, +) / Double(rates.count)
             let drift = first == 0 ? 0 : (cur - first) / first * 100
             HStack(alignment: .top, spacing: 18) {
-                stat("CURRENT", String(format: "₹%.4f", cur), emphasize: true)
+                stat("CURRENT", String(format: "%@%.4f", sym, cur), emphasize: true)
                 stat("RANGE", String(format: "%.2f – %.2f", lo, hi))
-                stat("AVG", String(format: "₹%.4f", avg))
+                stat("AVG", String(format: "%@%.4f", sym, avg))
                 stat("DRIFT", String(format: "%@%.2f%%",
                                      drift >= 0 ? "+" : "−", abs(drift)),
                      tint: drift >= 0 ? .lGain : .lLoss)
@@ -188,7 +220,7 @@ struct FXRateHistoryPanel: View {
             Text(p.label)
                 .font(Typo.eyebrow).tracking(1.2)
                 .foregroundStyle(Color.lInk3)
-            Text(String(format: "₹%.4f", p.rate))
+            Text(String(format: "%@%.4f", sym, p.rate))
                 .font(Typo.mono(12, weight: .semibold))
                 .foregroundStyle(Color.lInk)
                 .monospacedDigit()

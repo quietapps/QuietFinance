@@ -143,8 +143,8 @@ struct SnapshotEditorView: View {
                             isPresented: $confirmingLock,
                             titleVisibility: .visible) {
             Button("Lock Snapshot", role: .destructive) {
-                guard snapshot.usdToInrRate > 0 else {
-                    saveError = "Exchange rate must be positive before locking."
+                guard snapshot.hasAllRequiredRates else {
+                    saveError = "Every currency in use needs a positive rate before locking."
                     return
                 }
                 snapshot.isLocked = true
@@ -165,7 +165,7 @@ struct SnapshotEditorView: View {
             .keyboardShortcut(.defaultAction)
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Values become read-only. Exchange rate frozen at \(String(format: "%.2f", snapshot.usdToInrRate)).")
+            Text("Values become read-only. Frozen rates: \(lockRatesSummary).")
         }
         .confirmationDialog("Unlock \(snapshot.label)?",
                             isPresented: $confirmingUnlock,
@@ -308,42 +308,22 @@ struct SnapshotEditorView: View {
 
     private var rateBlock: some View {
         VStack(alignment: .trailing, spacing: 4) {
-            Text("USD → INR")
-                .font(Typo.eyebrow).tracking(1.2)
-                .foregroundStyle(Color.lInk3)
-            if snapshot.isLocked {
-                Text(String(format: "₹%.4f", snapshot.usdToInrRate))
-                    .font(Typo.mono(14, weight: .semibold))
-                    .foregroundStyle(Color.lInk)
-            } else {
-                HStack(spacing: 6) {
-                    TextField("", value: Binding(
-                        get: { snapshot.usdToInrRate },
-                        set: { snapshot.usdToInrRate = $0 }
-                    ), format: .number)
-                    .textFieldStyle(.roundedBorder)
-                    .font(Typo.mono(13))
-                    .frame(width: 90)
-                    Button {
-                        Task { await fetchLiveRate() }
-                    } label: {
-                        if isFetchingRate {
-                            ProgressView().controlSize(.small)
-                        } else {
-                            Image(systemName: "arrow.down.circle")
-                                .foregroundStyle(Color.lInk2)
-                        }
-                    }
-                    .disabled(isFetchingRate)
-                    .buttonStyle(.plain)
-                    .pointerStyle(.link)
-                    .help("Fetch USD→INR for \(Fmt.date(snapshot.date)) from frankfurter.app")
-                }
-                if snapshot.usdToInrRate <= 0 {
-                    Text("Rate must be > 0")
-                        .font(Typo.mono(10, weight: .medium))
-                        .foregroundStyle(Color.lLoss)
-                }
+            RatesEditor(
+                currencies: snapshot.currenciesInUse,
+                rates: Binding(
+                    get: { snapshot.ratesPerUSD },
+                    set: { snapshot.ratesPerUSD = $0 }
+                ),
+                date: snapshot.date,
+                readOnly: snapshot.isLocked,
+                onRatesFetched: { try? context.save() }
+            )
+            let missing = CurrencyConverter.unconvertibleCount(snapshot, in: app.displayCurrency)
+            if missing > 0 {
+                Text("\(missing) \(missing == 1 ? "value" : "values") not converted — rate missing")
+                    .font(Typo.mono(10, weight: .medium))
+                    .foregroundStyle(Color.lLoss)
+                    .help("These values are excluded from totals until a rate is set.")
             }
         }
     }
@@ -756,9 +736,9 @@ struct SnapshotEditorView: View {
                         Text("Lock Snapshot")
                     }
                 }
-                .disabled(snapshot.usdToInrRate <= 0)
-                .opacity(snapshot.usdToInrRate <= 0 ? 0.5 : 1)
-                .help(snapshot.usdToInrRate <= 0 ? "Set a positive USD→INR rate first" : "Freeze this snapshot")
+                .disabled(!snapshot.hasAllRequiredRates)
+                .opacity(snapshot.hasAllRequiredRates ? 1 : 0.5)
+                .help(snapshot.hasAllRequiredRates ? "Freeze this snapshot" : "Set a positive rate for every currency in use first")
             }
         }
         .padding(.horizontal, 24).padding(.vertical, 16)
@@ -820,8 +800,8 @@ struct SnapshotEditorView: View {
     }
 
     private func saveDraft(dismissAfter: Bool = false) {
-        guard snapshot.usdToInrRate > 0 else {
-            saveError = "Exchange rate must be positive before saving."
+        guard snapshot.hasAllRequiredRates else {
+            saveError = "Every currency in use needs a positive rate before saving."
             return
         }
         // Sanity check: net worth dropped >50% vs previous snapshot.
@@ -858,14 +838,27 @@ struct SnapshotEditorView: View {
         }
     }
 
+    /// Rates summary for the lock confirmation, e.g. "INR 83.10 · EUR 0.92".
+    private var lockRatesSummary: String {
+        let used = snapshot.currenciesInUse
+        guard !used.isEmpty else { return "none needed (all USD)" }
+        return used
+            .map { "\($0.rawValue) \(String(format: "%.2f", snapshot.rate(for: $0) ?? 0))" }
+            .joined(separator: " · ")
+    }
+
+    /// Fetch every in-use pair in one request. Product rule: never touches a
+    /// locked snapshot.
     @MainActor
     private func fetchLiveRate() async {
         guard !snapshot.isLocked else { return }
         isFetchingRate = true
         defer { isFetchingRate = false }
         do {
-            let r = try await FXService.fetchUSDtoINR(on: snapshot.date)
-            snapshot.usdToInrRate = r
+            let fetched = try await FXService.fetchRates(for: snapshot.currenciesInUse, on: snapshot.date)
+            var dict = snapshot.ratesPerUSD
+            for (code, rate) in fetched where rate > 0 { dict[code] = rate }
+            snapshot.ratesPerUSD = dict
             try? context.save()
             fetchError = nil
         } catch {

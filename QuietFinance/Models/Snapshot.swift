@@ -103,11 +103,15 @@ final class ExchangeRateHistory {
     var date: Date
     var usdToInr: Double
     var source: String
+    /// Which currency this rate is for (units per 1 USD). Additive attribute;
+    /// pre-existing rows default to INR, matching the legacy field name.
+    var currencyCode: String = "INR"
 
-    init(date: Date, usdToInr: Double, source: String) {
+    init(date: Date, usdToInr: Double, source: String, currencyCode: String = "INR") {
         self.id = UUID()
         self.date = date
         self.usdToInr = usdToInr
         self.source = source
+        self.currencyCode = currencyCode
     }
 }

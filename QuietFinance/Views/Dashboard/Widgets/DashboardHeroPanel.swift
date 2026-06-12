@@ -77,6 +77,20 @@ struct DashboardHeroPanel: View {
                 anomalyBanner(flag)
             }
 
+            if let s = active {
+                let missing = CurrencyConverter.unconvertibleCount(s, in: app.displayCurrency)
+                if missing > 0 {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text("\(missing) \(missing == 1 ? "value" : "values") not converted — missing exchange rate. Open the snapshot to fix.")
+                            .font(Typo.sans(11))
+                    }
+                    .foregroundStyle(Color.lLoss)
+                    .padding(.top, 8)
+                }
+            }
+
             HStack {
                 Spacer()
                 Button {
@@ -213,6 +227,14 @@ struct DashboardHeroPanel: View {
         let countries = Set(s.values.compactMap { $0.account?.country?.name }).count
         let people = Set(s.values.compactMap { $0.account?.person?.name })
         let peopleStr = people.sorted().joined(separator: " & ")
-        return "Across \(accCount) accounts in \(countries) \(countries == 1 ? "country" : "countries"), held by \(peopleStr). Last updated \(s.label) · exchange rate ₹\(String(format: "%.2f", s.usdToInrRate)) / $1."
+        var note = "Across \(accCount) accounts in \(countries) \(countries == 1 ? "country" : "countries"), held by \(peopleStr). Last updated \(s.label)"
+        let used = s.currenciesInUse
+        if !used.isEmpty {
+            let rates = used
+                .compactMap { c in s.rate(for: c).map { "\(c.rawValue) \(String(format: "%.2f", $0))" } }
+                .joined(separator: " · ")
+            if !rates.isEmpty { note += " · rates per $1: \(rates)" }
+        }
+        return note + "."
     }
 }

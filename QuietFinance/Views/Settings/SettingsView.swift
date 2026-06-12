@@ -572,12 +572,12 @@ struct SettingsView: View {
                 PanelHead(title: "Display")
                 VStack(spacing: 0) {
                     settingRow(label: "Default currency") {
-                        SegControl(
-                            options: Currency.allCases.map { ($0.rawValue, $0) },
+                        CurrencyPicker(
                             selection: Binding(
                                 get: { app.displayCurrency },
                                 set: { app.displayCurrency = $0 }
-                            )
+                            ),
+                            inUse: Array(Set(accounts.map(\.nativeCurrency))).sorted { $0.rawValue < $1.rawValue }
                         )
                     }
                     Divider().overlay(Color.lLine)
@@ -635,12 +635,13 @@ struct SettingsView: View {
                             .textFieldStyle(.roundedBorder)
                             .font(Typo.mono(12))
                             .frame(width: 130)
-                            SegControl<Currency>(
-                                options: Currency.allCases.map { (label: $0.rawValue, value: $0) },
+                            CurrencyPicker(
                                 selection: Binding(
                                     get: { app.netWorthGoalCurrency },
                                     set: { app.netWorthGoalCurrency = $0 }
-                                )
+                                ),
+                                inUse: Array(Set(accounts.map(\.nativeCurrency))).sorted { $0.rawValue < $1.rawValue },
+                                help: "Goal currency"
                             )
                         }
                     }

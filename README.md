@@ -61,8 +61,9 @@ Every finance app wants your bank login, a monthly fee, or both. Quiet Finance w
 - **Anomaly flag** — statistical outlier detection surfaces unusual jumps or drops (≥2σ) inline on the hero widget
 - **Year in review** — trailing-12-month panel: net change, best/worst quarter, highest balance, biggest mover account
 - Compare bar (vs Previous / Year ago)
-- Customizable widgets: **Goal progress + ETA + monthly breakeven**, Liquidity / runway, KPI cards, allocation breakdowns, movers, history
+- Customizable widgets: **Goal progress + ETA + monthly breakeven**, **Milestones** (next round number + on-track pacing), Liquidity / runway, KPI cards, **Net change rate**, **Currency exposure** with FX sensitivity, allocation breakdowns, **Allocation drift** vs targets with rebalance hints, **Debt payoff** ETA with extra-payment slider, movers, history
 - **Watchlist** of pinned accounts surfaced inline
+- **Getting-started checklist** on first run, derived live from your data
 
 ### Allocation & Trends
 - **Breakdown** — Treemap, stacked bars, filters, accounts table with % of total; cross-link from Dashboard slices
@@ -74,6 +75,7 @@ Every finance app wants your bank login, a monthly fee, or both. Quiet Finance w
 - **Share card** — one click copies a branded PNG card (net worth, delta, date) to the clipboard
 - Completeness badge, pinned snapshot tabs, missing-row highlights, stale-account flag
 - **Diff** (`⌘⇧D`) — compare two dates with a **Money Flow** Sankey visual of where value moved
+- **Scenario** — fork any snapshot into a what-if sandbox: tweak values, add hypothetical items, see delta net worth, allocation shift, and goal-ETA change. Never persisted — real data untouched by construction.
 
 ### Reports
 - Period compare, **QoQ heatmap** (quarters × categories), CAGR & monthly drift, asset-type drilldown
@@ -85,8 +87,9 @@ Every finance app wants your bank login, a monthly fee, or both. Quiet Finance w
 - **Receivables** — money owed to you, with start dates and per-snapshot balances
 
 ### Import / Export
-- CSV export: full history, accounts list, snapshot totals, receivables
+- CSV export: full history, accounts list, snapshot totals, receivables (now with per-snapshot multi-currency rate tables)
 - **Auto-detecting CSV import** handles both Full history and Accounts list formats (creates or updates existing accounts)
+- **Import preview** — dry-run sheet shows detected format, valid/issue rows, and what would be created before anything is written
 - PDF export: Dashboard snapshot and snapshot-detail reports
 
 ### Privacy & Security
@@ -100,10 +103,13 @@ Every finance app wants your bank login, a monthly fee, or both. Quiet Finance w
 - **Classic design** — the original familiar interface, always available. Switch any time in Settings → App design with no data impact.
 
 ### Productivity
-- **⌘K command palette** for instant navigation
+- **⌘K command palette** — fuzzy-matched navigation, entities, and actions, with recents on empty query
+- **Filter presets** — Breakdown and Trends remember last-used filters and save named presets
+- **Copy to clipboard** — right-click any key figure for Copy value / Copy row as CSV (off in stealth mode)
 - **Recently viewed** list with dimmed deleted entries
 - Sortable + resizable column headers on every grid, persisted across sessions
 - Three-level breadcrumb and search that jumps directly into editors
+- **Text size** setting scales the whole UI (Default → Largest)
 
 ### App icon picker
 Settings → **App icon** — choose from five icons. Switches the Dock + App Switcher icon live.
@@ -119,7 +125,7 @@ Settings → **App icon** — choose from five icons. Switches the Dock + App Sw
 All icons follow the Quiet Apps macOS icon standard: true n=5 superellipse (not rounded rect), 9% transparent safe-area ring on a 1024×1024 canvas so the Dock composites correct visual weight.
 
 ### FX
-Live **USD↔INR** fetch via [frankfurter.app](https://www.frankfurter.app/) (no API key required). Rates are pinned per snapshot; locked snapshots are never rewritten.
+**Full multi-currency**: accounts in any of 31 currencies (USD, INR, EUR, GBP, JPY, …) with live rates via [frankfurter.app](https://www.frankfurter.app/) (no API key required). Each snapshot freezes its own per-currency rate table — one "Fetch all" pulls every pair in a single request; locked snapshots are never rewritten.
 
 ### Data safety
 Manual and automatic SQLite backups, optional restore on launch, quit-time backup hook, snapshot pre-caching for fast renders.

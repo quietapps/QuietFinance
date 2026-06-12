@@ -5,6 +5,38 @@ All notable changes to **QuietFinance** (Quiet Finance) are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).  
 Version headings match **semver** derived from **`git log`** (newest-first). Xcode **`MARKETING_VERSION`** reads the same numeric line (e.g. `2.4` ≡ `2.4.0`); **`CURRENT_PROJECT_VERSION`** is the **build**.
 
+## [3.1.0] - 2026-06-12
+
+### Added
+
+- **Full multi-currency support** — accounts and receivables can use any of frankfurter.app's 31 currencies (EUR, GBP, JPY, AUD, …), not just USD/INR. Each snapshot freezes a per-currency rate table (`ratesPerUSD`); the new rates editor in snapshot creation and the snapshot editor shows one row per currency in use with a single "Fetch all" action (one network request for every pair) and manual entry as fallback. Locking now requires a positive rate for every currency the snapshot actually uses — a USD-only snapshot needs none. Existing data migrates automatically (the frozen USD→INR scalar is re-encoded losslessly; locked values never change), and the legacy `usd_to_inr_rate` CSV column and sort field keep working. Display currency becomes a searchable menu (in-use currencies first); the FX history panel charts any frozen pair.
+- **What-if scenario modeling** — new Scenario screen forks any snapshot into an in-memory sandbox: tweak account values, add hypothetical items (a purchase, windfall, new loan), and compare against the baseline with delta net worth, before/after allocation bars, and the goal-ETA shift ("16 months sooner"). Deliberately never persisted, exported, or backed up — real data is untouched by construction. Entry points: sidebar, snapshot row menu, command palette.
+- **Five insight widgets** (toggle/reorder in Settings → Dashboard widgets): **Milestones** (on-track/behind vs goal date + progress to the next round-number milestone), **Currency exposure** (net-worth share per currency with an "if INR weakens 10%…" sensitivity line), **Debt payoff** (trend payoff ETA + a live "pay extra per month" slider), **Net change rate** (per-month/quarter average from snapshot deltas, honestly labelled as savings + market combined), and **Allocation drift** (actual vs target with a concrete "move ~$X from Cash → Investment" hint).
+- **Welcome flow + getting-started checklist** — fresh installs choose "Start fresh" or "Explore with demo data" instead of silently receiving seed data; a dashboard checklist (person → account → first snapshot → optional goal) deep-links each step and derives progress live from the store. Existing installs never see it. Replay from Settings → Data or the palette.
+- **Command palette upgrades (⌘K)** — fuzzy matching with prefix/word-boundary scoring, recents on empty query (recently fired actions + recently opened entities), and new actions: New Account, Toggle Theme/Stealth/Compact, Export Full History CSV, Import CSV, Show Welcome Guide, Fork Latest Snapshot as Scenario.
+- **Filter presets + memory** — Breakdown and Trends remember their last-used grouping/filters/range across visits and gain a Presets menu (save current, apply, delete).
+- **CSV import preview** — importing now shows a dry-run sheet first: detected format, valid/issue row counts with line numbers, what would be created, and sample rows. Nothing is written until confirmed.
+- **Copy to clipboard** — right-click the hero figure, KPI cards, or Breakdown rows for "Copy value" / "Copy row as CSV". Suppressed in stealth mode so blurred values can't be exfiltrated.
+- **Text size setting** — Settings → Display → Text size (Default/Large/Larger/Largest) scales every label and number app-wide, including the custom Geist/Instrument Serif faces macOS Dynamic Type doesn't reach.
+- **Reminder interval setting** — the snapshot reminder cadence is now configurable (30/60/90/180 days), and Settings warns with a System Settings deep link when notifications are denied.
+- **VoiceOver chart summaries** — the hero sparkline, composition donut, and country bar now announce spoken summaries ("12 snapshots from Mar 2023…, change +25%"); stealth-blurred amounts are hidden from VoiceOver entirely.
+
+### Changed
+
+- **Dashboard rebuilt for speed** — the 1,550-line dashboard view was decomposed into per-widget structs with a single pure compute pass: category totals now come from one sweep over snapshot values (previously fifteen filter+reduce sweeps), snapshots are sorted once per refresh, liquidity analysis moved out of the render path, and the change observers no longer allocate arrays every frame. Rendering and numbers are unchanged.
+- **FX fetch is resilient** — transient failures (network hiccups, 5xx, 429) retry up to three times with backoff; every successful fetch now writes per-pair audit rows to the rate history.
+- **Failures are no longer silent** — snapshot lock/unlock/delete and account deletes report save errors via a new toast system and roll back cleanly; a failed lock-time backup warns instead of being discarded; backup prune/copy failures are logged; CSV import alerts list the exact failing line numbers; undo now explains when a restore is impossible because a parent entity was deleted.
+- **Editor sheets auto-focus** their Name field on open, so entity creation is fully keyboard-driven.
+
+### Fixed
+
+- **~25 crash-prone force unwraps removed** across forecasting, trends series-building, year-in-review, reports drilldowns, sparklines, and seed data — empty or single-snapshot datasets can no longer crash data-dependent computations.
+- **Unresolvable store URL no longer hard-crashes at launch** — it now lands in the same in-memory safe mode as a corrupt store, with a recovery banner.
+- **Stale cached totals on locked snapshots** — deleting an account, merging accounts, undoing a delete, importing CSV rows into an existing snapshot, or changing an account's currency now invalidates affected snapshot caches, so list and dashboard totals fall back to live math instead of showing outdated numbers.
+- **Notification permission race** — the reminder scheduler no longer schedules before authorization resolves, and only prompts when permission is undetermined.
+
+---
+
 ## [3.0.1] - 2026-06-08
 
 ### Added

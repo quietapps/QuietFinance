@@ -150,8 +150,17 @@ struct SnapshotEditorView: View {
                 snapshot.isLocked = true
                 snapshot.lockedAt = .now
                 SnapshotCache.recompute(snapshot)
-                try? context.save()
-                _ = BackupService.backupOnLock(label: snapshot.label)
+                do {
+                    try context.save()
+                } catch {
+                    context.rollback()
+                    ToastCenter.shared.show("Couldn’t lock snapshot: \(error.localizedDescription)")
+                    return
+                }
+                if BackupService.backupOnLock(label: snapshot.label) == nil {
+                    ToastCenter.shared.show("Snapshot locked, but the automatic backup failed.",
+                                            style: .warning)
+                }
             }
             .keyboardShortcut(.defaultAction)
             Button("Cancel", role: .cancel) {}
@@ -165,7 +174,13 @@ struct SnapshotEditorView: View {
                 snapshot.isLocked = false
                 snapshot.lockedAt = nil
                 SnapshotCache.invalidate(snapshot)
-                try? context.save()
+                do {
+                    try context.save()
+                } catch {
+                    context.rollback()
+                    ToastCenter.shared.show("Couldn’t unlock snapshot: \(error.localizedDescription)")
+                    return
+                }
                 backfillAccountValues()
                 backfillReceivableValues()
             }
@@ -181,7 +196,13 @@ struct SnapshotEditorView: View {
                 let cap = undo.capture(snapshot: snapshot)
                 if app.activeSnapshotID == snapshot.id { app.activeSnapshotID = nil }
                 context.delete(snapshot)
-                try? context.save()
+                do {
+                    try context.save()
+                } catch {
+                    context.rollback()
+                    ToastCenter.shared.show("Couldn’t delete snapshot: \(error.localizedDescription)")
+                    return
+                }
                 undo.stash(.snapshot(cap))
                 dismiss()
             }

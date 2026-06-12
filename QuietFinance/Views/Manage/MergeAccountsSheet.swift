@@ -124,6 +124,9 @@ struct MergeAccountsSheet: View {
             if let sid = v.snapshot?.id { targetBySnapshot[sid] = v }
         }
 
+        // Every snapshot whose values move or merge gets stale cached totals.
+        let affectedSnapshots = Set(source.values.compactMap(\.snapshot) + target.values.compactMap(\.snapshot))
+
         let sourceValues = source.values
         for v in sourceValues {
             guard let snap = v.snapshot else {
@@ -151,6 +154,8 @@ struct MergeAccountsSheet: View {
 
         do {
             try context.save()
+            affectedSnapshots.forEach(SnapshotCache.invalidate)
+            try? context.save()
             onComplete()
             dismiss()
         } catch {

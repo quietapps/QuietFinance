@@ -151,7 +151,9 @@ final class UndoStash: ObservableObject {
                 let country = st.countryID.flatMap({ id in countries.first { $0.id == id } }),
                 let type = st.assetTypeID.flatMap({ id in types.first { $0.id == id } })
             else {
-                // Missing parent entity — cannot reconstruct
+                // Missing parent entity — cannot reconstruct. Tell the user
+                // instead of silently doing nothing.
+                restoreError = "Couldn’t restore “\(st.name)” — its person, country, or asset type was deleted."
                 clear()
                 return
             }
@@ -173,6 +175,8 @@ final class UndoStash: ObservableObject {
                 guard let snap = snapByID[v.snapshotID] else { continue }
                 let av = AssetValue(snapshot: snap, account: a, nativeValue: v.nativeValue, note: v.note)
                 context.insert(av)
+                // Restored values change this snapshot's totals.
+                SnapshotCache.invalidate(snap)
             }
         }
         do {

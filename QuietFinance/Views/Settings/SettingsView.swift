@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 import AppKit
 import Charts
 import Combine
+import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var app: AppState
@@ -12,6 +13,8 @@ struct SettingsView: View {
     @Query(sort: \Snapshot.date, order: .reverse) private var snapshots: [Snapshot]
     @Query(sort: \Account.name) private var accounts: [Account]
     @AppStorage("reminderEnabled") private var reminderEnabled: Bool = true
+    @AppStorage("reminderIntervalDays") private var reminderIntervalDays: Int = 90
+    @State private var notificationsDenied = false
 
     @State private var pendingExport: PendingExport?
     @State private var confirmingReset = false
@@ -1156,22 +1159,70 @@ struct SettingsView: View {
                         set: { newValue in
                             reminderEnabled = newValue
                             ReminderScheduler.applyPreference(enabled: newValue, context: context)
+                            if newValue && notificationsDenied {
+                                ToastCenter.shared.show(
+                                    "Notifications are off for Quiet Finance in System Settings — reminders won’t fire.",
+                                    style: .warning)
+                            }
                         }
                     )) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Quarterly update reminder")
+                            Text("Snapshot update reminder")
                                 .font(Typo.sans(12, weight: .medium))
                                 .foregroundStyle(Color.lInk)
-                            Text("Fires when last snapshot is older than 90 days.")
+                            Text("Fires when last snapshot is older than \(reminderIntervalDays > 0 ? reminderIntervalDays : 90) days.")
                                 .font(Typo.sans(11))
                                 .foregroundStyle(Color.lInk3)
                         }
                     }
                     .toggleStyle(.switch)
+
+                    settingRow(label: "Reminder interval",
+                               sublabel: "How long after the last snapshot to nudge") {
+                        Picker("", selection: Binding(
+                            get: { reminderIntervalDays > 0 ? reminderIntervalDays : 90 },
+                            set: { newValue in
+                                reminderIntervalDays = newValue
+                                ReminderScheduler.applyPreference(enabled: reminderEnabled, context: context)
+                            }
+                        )) {
+                            Text("30 days").tag(30)
+                            Text("60 days").tag(60)
+                            Text("90 days").tag(90)
+                            Text("180 days").tag(180)
+                        }
+                        .labelsHidden()
+                        .frame(width: 120)
+                    }
+
+                    if reminderEnabled && notificationsDenied {
+                        HStack(spacing: 8) {
+                            Image(systemName: "bell.slash.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(Color.lLoss)
+                            Text("Notifications are denied in System Settings.")
+                                .font(Typo.sans(11))
+                                .foregroundStyle(Color.lInk2)
+                            Spacer(minLength: 8)
+                            GhostButton(action: {
+                                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+                                    NSWorkspace.shared.open(url)
+                                }
+                            }) {
+                                Text("Open System Settings")
+                            }
+                        }
+                        .padding(10)
+                        .background(Color.lLossSoft.opacity(0.3))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
                 }
                 .padding(18)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+        }
+        .task {
+            notificationsDenied = await ReminderScheduler.authorizationStatus() == .denied
         }
     }
 
@@ -1225,8 +1276,19 @@ struct SettingsView: View {
         do {
             let text = try String(contentsOf: url, encoding: .utf8)
             let report = try CSVImporter.importAuto(csv: text, context: context)
-            importIsError = false
-            importResult = report.summary
+            if report.rowsRejected > 0 || !report.errors.isEmpty {
+                // Surface exactly which lines failed instead of a bare count.
+                importIsError = true
+                let shown = report.errors.prefix(8)
+                var lines = [report.summary, ""] + shown
+                if report.errors.count > shown.count {
+                    lines.append("…and \(report.errors.count - shown.count) more.")
+                }
+                importResult = lines.joined(separator: "\n")
+            } else {
+                importIsError = false
+                importResult = report.summary
+            }
         } catch {
             importIsError = true
             importResult = error.localizedDescription

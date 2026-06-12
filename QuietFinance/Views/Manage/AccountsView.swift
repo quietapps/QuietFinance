@@ -102,12 +102,18 @@ struct AccountsView: View {
             Button("Delete permanently", role: .destructive) {
                 if let a = confirmDelete {
                     let cap = undo.capture(account: a)
+                    // Cached totals on locked snapshots include this account's
+                    // values — invalidate them so reads fall back to live math.
+                    let affected = a.values.compactMap(\.snapshot)
                     context.delete(a)
                     do {
                         try context.save()
+                        affected.forEach(SnapshotCache.invalidate)
+                        try? context.save()
                         undo.stash(.account(cap))
                     } catch {
                         context.rollback()
+                        ToastCenter.shared.show("Couldn’t delete account: \(error.localizedDescription)")
                     }
                 }
                 confirmDelete = nil

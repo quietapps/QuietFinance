@@ -178,9 +178,21 @@ enum BackupService {
             }
         guard matching.count > keep else { return }
         for url in matching.dropFirst(keep) {
-            try? fm.removeItem(at: url)
-            try? fm.removeItem(at: sidecar(url, "-wal"))
-            try? fm.removeItem(at: sidecar(url, "-shm"))
+            do {
+                try fm.removeItem(at: url)
+            } catch {
+                NSLog("BackupService: failed to prune \(url.lastPathComponent): \(error.localizedDescription)")
+            }
+            // Sidecars legitimately may not exist — only log real failures.
+            for suffix in ["-wal", "-shm"] {
+                let side = sidecar(url, suffix)
+                guard fm.fileExists(atPath: side.path) else { continue }
+                do {
+                    try fm.removeItem(at: side)
+                } catch {
+                    NSLog("BackupService: failed to prune \(side.lastPathComponent): \(error.localizedDescription)")
+                }
+            }
         }
     }
 
@@ -439,6 +451,7 @@ enum BackupService {
             }
             return true
         } catch {
+            NSLog("BackupService: copyStore \(src.lastPathComponent) → \(dst.lastPathComponent) failed: \(error.localizedDescription)")
             return false
         }
     }

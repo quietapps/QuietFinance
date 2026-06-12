@@ -437,6 +437,9 @@ enum CSVImporter {
                 let av = AssetValue(snapshot: snapshot, account: account, nativeValue: native, note: note)
                 context.insert(av)
                 report.valuesCreated += 1
+                // A pre-existing snapshot that received a new value has stale
+                // cached totals.
+                SnapshotCache.invalidate(snapshot)
             }
         }
 

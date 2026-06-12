@@ -4,12 +4,22 @@ import UserNotifications
 
 enum ReminderScheduler {
     static let reminderID = "quarterly-snapshot-reminder"
-    static let intervalDays = 90
     static let prefKey = "reminderEnabled"
+    static let intervalKey = "reminderIntervalDays"
+
+    /// User-configurable cadence (Settings → Reminders). Defaults to 90 days.
+    static var intervalDays: Int {
+        let v = UserDefaults.standard.integer(forKey: intervalKey)
+        return v > 0 ? v : 90
+    }
 
     static var isEnabled: Bool {
         if UserDefaults.standard.object(forKey: prefKey) == nil { return true }
         return UserDefaults.standard.bool(forKey: prefKey)
+    }
+
+    static func authorizationStatus() async -> UNAuthorizationStatus {
+        await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
     }
 
     static func check(context: ModelContext) {
@@ -18,9 +28,20 @@ enum ReminderScheduler {
             return
         }
         let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
-            guard granted else { return }
-            DispatchQueue.main.async { schedule(context: context) }
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+                    guard granted else { return }
+                    DispatchQueue.main.async { schedule(context: context) }
+                }
+            case .authorized, .provisional:
+                DispatchQueue.main.async { schedule(context: context) }
+            default:
+                // Denied — nothing to schedule. Settings surfaces the state
+                // with a deep link to System Settings.
+                break
+            }
         }
     }
 

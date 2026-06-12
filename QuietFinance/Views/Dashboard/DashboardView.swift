@@ -17,11 +17,16 @@ struct DashboardView: View {
             if hidden.contains(w) { return false }
             // Auto-hide widgets with no data to avoid empty cards.
             switch w {
-            case .goal:        return app.netWorthGoal > 0
-            case .liabilities: return !stats.liabilities.isEmpty
-            case .receivables: return hasReceivables
-            case .watchlist:   return !app.pinnedAccountIDs.isEmpty
-            default:           return true
+            case .goal:             return app.netWorthGoal > 0
+            case .milestone:        return snapshots.count >= 2
+            case .netChange:        return stats.netChange != nil
+            case .currencyExposure: return stats.exposure.count >= 2
+            case .allocationDrift:  return !stats.targets.isEmpty
+            case .liabilities:      return !stats.liabilities.isEmpty
+            case .debtPayoff:       return stats.debtPayoff != nil
+            case .receivables:      return hasReceivables
+            case .watchlist:        return !app.pinnedAccountIDs.isEmpty
+            default:                return true
             }
         }
     }
@@ -47,8 +52,27 @@ struct DashboardView: View {
             GoalProgressPanel(curTotal: stats.curTotal,
                               goal: goalDisplay() ?? 0,
                               history: stats.fitHistory)
+        case .milestone:
+            MilestonePanel(history: stats.fitHistory,
+                           curTotal: stats.curTotal,
+                           goal: goalDisplay())
         case .liquidity:
             LiquidityPanel(result: stats.liquidity)
+        case .netChange:
+            if let nc = stats.netChange {
+                NetChangePanel(result: nc)
+            }
+        case .currencyExposure:
+            CurrencyExposurePanel(slices: stats.exposure, curTotal: stats.curTotal)
+        case .allocationDrift:
+            AllocationDriftPanel(typeItems: stats.typeItems,
+                                 targets: stats.targets,
+                                 curTotal: stats.curTotal,
+                                 onTargetsSaved: recompute)
+        case .debtPayoff:
+            if let dp = stats.debtPayoff {
+                DebtPayoffPanel(result: dp)
+            }
         case .kpi:
             KPIGridPanel(cur: stats.cur, prev: stats.prev, ya: stats.ya,
                          hasPrev: stats.hasPrev, hasYearAgo: stats.hasYearAgo)

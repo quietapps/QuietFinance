@@ -6,10 +6,15 @@ enum DashboardWidget: String, CaseIterable, Identifiable, Codable {
     case hero
     case digest
     case goal
+    case milestone
     case liquidity
     case kpi
+    case netChange
+    case currencyExposure
     case composition
+    case allocationDrift
     case liabilities
+    case debtPayoff
     case receivables
     case movers
     case watchlist
@@ -18,36 +23,48 @@ enum DashboardWidget: String, CaseIterable, Identifiable, Codable {
 
     var label: String {
         switch self {
-        case .hero:        return "Hero · Net worth"
-        case .digest:      return "Digest sentence"
-        case .goal:        return "Goal progress"
-        case .liquidity:   return "Liquidity"
-        case .kpi:         return "KPI grid"
-        case .composition: return "Composition (donuts)"
-        case .liabilities: return "Liabilities"
-        case .receivables: return "Receivables"
-        case .movers:      return "Top movers"
-        case .watchlist:   return "Watchlist (pinned)"
+        case .hero:             return "Hero · Net worth"
+        case .digest:           return "Digest sentence"
+        case .goal:             return "Goal progress"
+        case .milestone:        return "Milestones"
+        case .liquidity:        return "Liquidity"
+        case .kpi:              return "KPI grid"
+        case .netChange:        return "Net change rate"
+        case .currencyExposure: return "Currency exposure"
+        case .composition:      return "Composition (donuts)"
+        case .allocationDrift:  return "Allocation drift"
+        case .liabilities:      return "Liabilities"
+        case .debtPayoff:       return "Debt payoff"
+        case .receivables:      return "Receivables"
+        case .movers:           return "Top movers"
+        case .watchlist:        return "Watchlist (pinned)"
         }
     }
 
     var icon: String {
         switch self {
-        case .hero:        return "house"
-        case .digest:      return "text.alignleft"
-        case .goal:        return "target"
-        case .liquidity:   return "drop"
-        case .kpi:         return "square.grid.2x2"
-        case .composition: return "chart.pie"
-        case .liabilities: return "minus.circle"
-        case .receivables: return "hourglass"
-        case .movers:      return "arrow.up.arrow.down"
-        case .watchlist:   return "star"
+        case .hero:             return "house"
+        case .digest:           return "text.alignleft"
+        case .goal:             return "target"
+        case .milestone:        return "flag.checkered"
+        case .liquidity:        return "drop"
+        case .kpi:              return "square.grid.2x2"
+        case .netChange:        return "chart.line.flattrend.xyaxis"
+        case .currencyExposure: return "dollarsign.arrow.circlepath"
+        case .composition:      return "chart.pie"
+        case .allocationDrift:  return "scalemass"
+        case .liabilities:      return "minus.circle"
+        case .debtPayoff:       return "creditcard.trianglebadge.exclamationmark"
+        case .receivables:      return "hourglass"
+        case .movers:           return "arrow.up.arrow.down"
+        case .watchlist:        return "star"
         }
     }
 
     static var defaultOrder: [DashboardWidget] {
-        [.hero, .digest, .goal, .liquidity, .kpi, .watchlist, .composition, .liabilities, .receivables, .movers]
+        [.hero, .digest, .goal, .milestone, .liquidity, .kpi, .netChange,
+         .currencyExposure, .watchlist, .composition, .allocationDrift,
+         .liabilities, .debtPayoff, .receivables, .movers]
     }
 }
 

@@ -80,6 +80,9 @@ struct DashboardStats {
     var liabilities: [LiabilityRow] = []
     var anomaly: AnomalyFlag? = nil
     var liquidity: LiquidityAnalysis.Result? = nil
+    var exposure: [CurrencyExposure.Slice] = []
+    var debtPayoff: DebtPayoff.Result? = nil
+    var netChange: NetChangeAnalysis.Result? = nil
     var hasPrev: Bool = false
     var hasYearAgo: Bool = false
     static let empty = DashboardStats()
@@ -133,6 +136,13 @@ enum DashboardCompute {
         out.liabilities = liabilities(cur: active, prev: prev, all: asc, target: target)
         out.anomaly = anomaly(trajectoryValues: out.trajectory.map(\.val))
         out.liquidity = LiquidityAnalysis.compute(snapshots: snapshots,
+                                                  displayCurrency: target,
+                                                  includeIlliquid: includeIlliquid)
+        out.exposure = CurrencyExposure.compute(snapshot: active,
+                                                displayCurrency: target,
+                                                includeIlliquid: includeIlliquid)
+        out.debtPayoff = DebtPayoff.compute(snapshots: snapshots, displayCurrency: target)
+        out.netChange = NetChangeAnalysis.compute(snapshots: snapshots,
                                                   displayCurrency: target,
                                                   includeIlliquid: includeIlliquid)
         return out

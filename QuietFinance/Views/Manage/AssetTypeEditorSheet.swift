@@ -6,6 +6,7 @@ struct AssetTypeEditorSheet: View {
     @Environment(\.modelContext) private var context
     let existing: AssetType?
 
+    @FocusState private var nameFieldFocused: Bool
     @State private var name: String = ""
     @State private var category: AssetCategory = .cash
     @State private var errorMessage: String?
@@ -24,6 +25,8 @@ struct AssetTypeEditorSheet: View {
             Text(existing == nil ? "New Asset Type" : "Edit Asset Type").font(Typo.serifNum(24))
             Form {
                 TextField("Name", text: $name)
+                    .focused($nameFieldFocused)
+                    .onAppear { nameFieldFocused = true }
                 Picker("Category", selection: $category) {
                     ForEach(AssetCategory.allCases) { Text($0.rawValue).tag($0) }
                 }

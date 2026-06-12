@@ -10,6 +10,7 @@ struct CountryEditorSheet: View {
 
     @AppStorage("displayCurrency") private var displayCurrencyRaw: String = Currency.USD.rawValue
 
+    @FocusState private var nameFieldFocused: Bool
     @State private var code: String = ""
     @State private var name: String = ""
     @State private var flag: String = ""
@@ -45,6 +46,8 @@ struct CountryEditorSheet: View {
             Form {
                 TextField("Code (US, IN)", text: $code).textCase(.uppercase)
                 TextField("Name", text: $name)
+                    .focused($nameFieldFocused)
+                    .onAppear { nameFieldFocused = true }
                 HStack(spacing: 8) {
                     TextField("Flag emoji", text: $flag)
                     if !flag.isEmpty {

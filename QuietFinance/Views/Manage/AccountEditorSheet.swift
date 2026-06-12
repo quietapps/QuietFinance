@@ -11,6 +11,7 @@ struct AccountEditorSheet: View {
 
     let existing: Account?
 
+    @FocusState private var nameFieldFocused: Bool
     @State private var name: String = ""
     @State private var personID: UUID?
     @State private var countryID: UUID?
@@ -63,6 +64,8 @@ struct AccountEditorSheet: View {
 
             Form {
                 TextField("Name", text: $name)
+                    .focused($nameFieldFocused)
+                    .onAppear { nameFieldFocused = true }
 
                 if let warn = duplicateWarning {
                     HStack(spacing: 6) {

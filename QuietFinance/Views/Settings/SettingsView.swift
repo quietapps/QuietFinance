@@ -634,6 +634,17 @@ struct SettingsView: View {
                         .labelsHidden()
                     }
                     Divider().overlay(Color.lLine)
+                    settingRow(label: "Text size",
+                               sublabel: "Scales every label and number app-wide.") {
+                        SegControl(
+                            options: [("Default", 1.0), ("Large", 1.1), ("Larger", 1.2), ("Largest", 1.35)],
+                            selection: Binding(
+                                get: { app.textScale },
+                                set: { app.textScale = $0 }
+                            )
+                        )
+                    }
+                    Divider().overlay(Color.lLine)
                     settingRow(label: "Compact mode",
                                sublabel: "Shrinks padding + headers for laptop screens.") {
                         Toggle("", isOn: Binding(

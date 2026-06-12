@@ -6,6 +6,7 @@ struct PersonEditorSheet: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Person.name) private var allPeople: [Person]
     let existing: Person?
+    @FocusState private var nameFieldFocused: Bool
     @State private var name: String = ""
     @State private var color: Color = .blue
     @State private var includeInNetWorth: Bool = true
@@ -30,6 +31,8 @@ struct PersonEditorSheet: View {
             Text(existing == nil ? "New Person" : "Edit Person").font(Typo.serifNum(24))
             Form {
                 TextField("Name", text: $name)
+                    .focused($nameFieldFocused)
+                    .onAppear { nameFieldFocused = true }
                 ColorPicker("Chart color", selection: $color, supportsOpacity: false)
                 Toggle("Include in net worth", isOn: $includeInNetWorth)
             }

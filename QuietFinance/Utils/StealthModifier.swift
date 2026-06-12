@@ -24,6 +24,8 @@ struct StealthAmount: ViewModifier {
             .opacity(active ? 0.85 : 1)
             .onHover { hovering = $0 }
             .animation(.easeInOut(duration: 0.14), value: active)
+            // A blurred amount must not leak through VoiceOver either.
+            .accessibilityHidden(stealthMode)
     }
 }
 

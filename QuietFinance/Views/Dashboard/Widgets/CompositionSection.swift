@@ -51,6 +51,10 @@ struct CompositionSection: View {
                     StackedHBar(items: countryItems.map {
                         StackedHBar.Item(label: $0.label, value: $0.value, color: $0.color)
                     })
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Allocation by country")
+                    .accessibilityValue(ChartA11y.allocationSummary(
+                        items: countryItems.map { ($0.label, $0.value) }, total: curTotal))
                     VStack(spacing: 0) {
                         ForEach(Array(countryItems.enumerated()), id: \.offset) { _, c in
                             Button {
@@ -185,6 +189,10 @@ struct CompositionSection: View {
                     .cornerRadius(2)
                 }
                 .frame(width: 180, height: 180)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Allocation donut")
+                .accessibilityValue(ChartA11y.allocationSummary(
+                    items: items.map { ($0.label, $0.value) }, total: total))
                 .chartOverlay { _ in
                     GeometryReader { geo in
                         Rectangle()

@@ -103,6 +103,7 @@ struct WatchlistPanel: View {
                 .buttonStyle(.plain)
                 .pointerStyle(.link)
                 .help("Unpin from watchlist")
+                .accessibilityLabel("Unpin \(a.name) from watchlist")
             }
             .padding(.horizontal, 18).padding(.vertical, 12)
             .contentShape(Rectangle())

@@ -8,6 +8,7 @@ struct ReceivableEditorSheet: View {
 
     @AppStorage("displayCurrency") private var displayCurrencyRaw: String = Currency.USD.rawValue
 
+    @FocusState private var nameFieldFocused: Bool
     @State private var name: String = ""
     @State private var debtor: String = ""
     @State private var nativeCurrency: Currency = .USD
@@ -45,6 +46,8 @@ struct ReceivableEditorSheet: View {
 
             Form {
                 TextField("Name", text: $name)
+                    .focused($nameFieldFocused)
+                    .onAppear { nameFieldFocused = true }
                 TextField("Debtor (who owes)", text: $debtor)
                 Picker("Native Currency", selection: $nativeCurrency) {
                     ForEach(Currency.allCases) { Text($0.rawValue).tag($0) }

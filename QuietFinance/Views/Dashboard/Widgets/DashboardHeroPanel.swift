@@ -64,6 +64,11 @@ struct DashboardHeroPanel: View {
             embeddedSparkline
                 .frame(height: 56)
                 .padding(.bottom, 14)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Net worth trajectory")
+                .accessibilityValue(ChartA11y.seriesSummary(
+                    points: trajectory.map { ($0.date, $0.val) },
+                    currency: app.displayCurrency))
 
             if let s = active {
                 Text(footnote(for: s))

@@ -150,11 +150,20 @@ enum Typo {
     static let serif   = "InstrumentSerif-Regular"
     static let serifIt = "InstrumentSerif-Italic"
 
+    /// App-wide text scale (Settings → Display → Text size). All Typo fonts
+    /// multiply through this, giving custom fonts the Dynamic Type behavior
+    /// macOS doesn't provide natively. Re-render rides AppState's
+    /// objectWillChange, same as the useModernDesign reads below.
+    static var scale: CGFloat {
+        let v = UserDefaults.standard.double(forKey: "textScale")
+        return v > 0 ? CGFloat(v) : 1.0
+    }
+
     static func serifNum(_ size: CGFloat) -> Font {
         if UserDefaults.standard.bool(forKey: "useModernDesign") {
-            return .system(size: size, weight: .bold, design: .default)
+            return .system(size: size * scale, weight: .bold, design: .default)
         }
-        return .custom(serif, size: size).weight(.regular)
+        return .custom(serif, size: size * scale).weight(.regular)
     }
     static func mono(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         let name: String
@@ -164,7 +173,7 @@ enum Typo {
         case .bold:     name = monoSB
         default:        name = mono
         }
-        return .custom(name, size: size)
+        return .custom(name, size: size * scale)
     }
     static func sans(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         let name: String
@@ -174,20 +183,20 @@ enum Typo {
         case .bold:     name = sansB
         default:        name = sans
         }
-        return .custom(name, size: size)
+        return .custom(name, size: size * scale)
     }
     static func serifItalic(_ size: CGFloat) -> Font {
         if UserDefaults.standard.bool(forKey: "useModernDesign") {
-            return .system(size: size, weight: .regular, design: .default).italic()
+            return .system(size: size * scale, weight: .regular, design: .default).italic()
         }
-        return .custom(serifIt, size: size)
+        return .custom(serifIt, size: size * scale)
     }
 
     /// eyebrow: tiny uppercase mono label
-    static let eyebrow    = Font.custom(mono, size: 10).weight(.medium)
-    static let label      = Font.custom(mono, size: 11).weight(.medium)
-    static let bodySans   = Font.custom(sans, size: 13)
-    static let bodyMono   = Font.custom(mono, size: 12)
+    static var eyebrow:  Font { Font.custom(mono, size: 10 * scale).weight(.medium) }
+    static var label:    Font { Font.custom(mono, size: 11 * scale).weight(.medium) }
+    static var bodySans: Font { Font.custom(sans, size: 13 * scale) }
+    static var bodyMono: Font { Font.custom(mono, size: 12 * scale) }
 }
 
 // MARK: - Font registrar

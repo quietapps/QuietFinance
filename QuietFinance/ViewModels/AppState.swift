@@ -50,6 +50,13 @@ final class AppState: ObservableObject {
         get { ForecastMethod(rawValue: forecastMethodRaw) ?? .linear }
         set { forecastMethodRaw = newValue.rawValue; objectWillChange.send() }
     }
+    /// App-wide text scale multiplier (1.0 = default). Read by Typo's font
+    /// builders; setter pushes objectWillChange so every screen re-renders.
+    @AppStorage("textScale") private var _textScale: Double = 1.0
+    var textScale: Double {
+        get { _textScale }
+        set { _textScale = newValue; objectWillChange.send() }
+    }
     @AppStorage("compactMode") var compactMode: Bool = false
     @AppStorage("requireAppLock") var requireAppLock: Bool = true
     /// Minutes of in-app idle (no key/mouse) before the lock gate re-engages.

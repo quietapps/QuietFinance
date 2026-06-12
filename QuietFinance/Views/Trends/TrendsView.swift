@@ -552,13 +552,15 @@ struct TrendsView: View {
 
     private func goalDisplay() -> Double? {
         guard app.netWorthGoal > 0 else { return nil }
-        let rate = snapshots.first?.usdToInrRate ?? 1
-        return CurrencyConverter.convert(
-            nativeValue: app.netWorthGoal,
-            from: app.netWorthGoalCurrency,
-            to: app.displayCurrency,
-            usdToInrRate: rate
-        )
+        if let snap = snapshots.first,
+           let v = CurrencyConverter.convert(nativeValue: app.netWorthGoal,
+                                             from: app.netWorthGoalCurrency,
+                                             to: app.displayCurrency,
+                                             in: snap) {
+            return v
+        }
+        // No snapshot or missing rate — usable only when no conversion needed.
+        return app.netWorthGoalCurrency == app.displayCurrency ? app.netWorthGoal : nil
     }
 
     private func totalTooltip(for h: SnapshotTotal) -> some View {

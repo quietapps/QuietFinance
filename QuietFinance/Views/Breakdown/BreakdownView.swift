@@ -175,7 +175,6 @@ struct BreakdownView: View {
     private func computeRows() -> [Row] {
         guard let s = active else { return [] }
         let target = app.displayCurrency
-        let rate = s.usdToInrRate
         let inc = app.includeIlliquidInNetWorth
         return s.values.compactMap { v -> Row? in
             guard let acc = v.account else { return nil }
@@ -199,8 +198,8 @@ struct BreakdownView: View {
                     nativeValue: v.nativeValue,
                     from: acc.nativeCurrency,
                     to: target,
-                    usdToInrRate: rate
-                ),
+                    in: s
+                ) ?? 0,
                 institution: acc.institution,
                 notes: acc.notes,
                 groupName: acc.groupName

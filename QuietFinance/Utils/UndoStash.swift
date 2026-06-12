@@ -10,6 +10,7 @@ final class UndoStash: ObservableObject {
         let date: Date
         let label: String
         let usdToInrRate: Double
+        let ratesPerUSD: [String: Double]
         let isLocked: Bool
         let lockedAt: Date?
         let notes: String
@@ -62,6 +63,7 @@ final class UndoStash: ObservableObject {
             date: s.date,
             label: s.label,
             usdToInrRate: s.usdToInrRate,
+            ratesPerUSD: s.ratesPerUSD,
             isLocked: s.isLocked,
             lockedAt: s.lockedAt,
             notes: s.notes,
@@ -135,6 +137,7 @@ final class UndoStash: ObservableObject {
         case .snapshot(let st):
             let s = Snapshot(date: st.date, label: st.label, usdToInrRate: st.usdToInrRate, notes: st.notes)
             s.id = st.id
+            if !st.ratesPerUSD.isEmpty { s.ratesPerUSD = st.ratesPerUSD }
             s.isLocked = st.isLocked
             s.lockedAt = st.lockedAt
             s.createdAt = st.createdAt

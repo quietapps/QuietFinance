@@ -45,10 +45,14 @@ enum SnapshotCache {
         s.cacheValid = false
     }
 
-    /// Read total in display currency. Returns nil when cache invalid so the
-    /// caller can fall back to the live reduce path.
+    /// Read total in display currency. Returns nil when cache invalid or the
+    /// snapshot lacks a rate for the display currency, so the caller can fall
+    /// back to the live reduce path. Conversion is linear, so the USD base ×
+    /// the snapshot's frozen rate reconstructs any display currency exactly.
     static func cachedTotal(_ s: Snapshot, in ccy: Currency) -> Double? {
         guard s.cacheValid else { return nil }
-        return ccy == .USD ? s.cachedTotalUSD : s.cachedTotalINR
+        if ccy == .USD { return s.cachedTotalUSD }
+        guard let rate = s.rate(for: ccy) else { return nil }
+        return s.cachedTotalUSD * rate
     }
 }

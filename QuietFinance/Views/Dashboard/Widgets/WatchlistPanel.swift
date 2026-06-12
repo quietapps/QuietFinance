@@ -48,13 +48,11 @@ struct WatchlistPanel: View {
         let prevNative = prevSnap?.values.first { $0.account?.id == a.id }?.nativeValue
         let curDisplay: Double? = {
             guard let v = curNative, let s = activeSnap else { return nil }
-            return CurrencyConverter.convert(nativeValue: v, from: a.nativeCurrency, to: target,
-                                             usdToInrRate: s.usdToInrRate)
+            return CurrencyConverter.convert(nativeValue: v, from: a.nativeCurrency, to: target, in: s)
         }()
         let prevDisplay: Double? = {
             guard let v = prevNative, let s = prevSnap else { return nil }
-            return CurrencyConverter.convert(nativeValue: v, from: a.nativeCurrency, to: target,
-                                             usdToInrRate: s.usdToInrRate)
+            return CurrencyConverter.convert(nativeValue: v, from: a.nativeCurrency, to: target, in: s)
         }()
         let diff: Double? = {
             guard let c = curDisplay, let p = prevDisplay else { return nil }

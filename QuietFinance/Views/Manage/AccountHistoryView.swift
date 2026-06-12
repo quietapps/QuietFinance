@@ -33,13 +33,13 @@ struct AccountHistoryView: View {
         let target = app.displayCurrency
         let native = account.nativeCurrency
         return account.values.compactMap { v -> Point? in
-            guard let s = v.snapshot else { return nil }
-            let display = CurrencyConverter.convert(
-                nativeValue: v.nativeValue,
-                from: native,
-                to: target,
-                usdToInrRate: s.usdToInrRate
-            )
+            guard let s = v.snapshot,
+                  let display = CurrencyConverter.convert(
+                      nativeValue: v.nativeValue,
+                      from: native,
+                      to: target,
+                      in: s
+                  ) else { return nil }
             return Point(
                 date: s.date,
                 label: s.label,

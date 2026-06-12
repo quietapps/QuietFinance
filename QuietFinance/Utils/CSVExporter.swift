@@ -29,7 +29,7 @@ enum CSVExporter {
             "snapshot_date", "snapshot_label", "is_locked", "usd_to_inr_rate",
             "person", "country_code", "country_name", "asset_type", "category",
             "account_name", "institution", "native_currency", "native_value",
-            "value_usd", "value_inr", "note"
+            "value_usd", "value_inr", "note", "snapshot_rates"
         ]
         var rows: [[String]] = [header]
 
@@ -42,10 +42,10 @@ enum CSVExporter {
                 guard let acc = v.account else { continue }
                 let usd = CurrencyConverter.convert(nativeValue: v.nativeValue,
                                                     from: acc.nativeCurrency, to: .USD,
-                                                    usdToInrRate: s.usdToInrRate)
+                                                    in: s) ?? 0
                 let inr = CurrencyConverter.convert(nativeValue: v.nativeValue,
                                                     from: acc.nativeCurrency, to: .INR,
-                                                    usdToInrRate: s.usdToInrRate)
+                                                    in: s) ?? 0
                 rows.append([
                     dateFmt.string(from: s.date),
                     s.label,
@@ -62,7 +62,8 @@ enum CSVExporter {
                     String(format: "%.2f", v.nativeValue),
                     String(format: "%.2f", usd),
                     String(format: "%.2f", inr),
-                    v.note
+                    v.note,
+                    encodeRates(s)
                 ])
             }
         }
@@ -93,7 +94,7 @@ enum CSVExporter {
     }
 
     static func snapshotTotals(snapshots: [Snapshot]) -> String {
-        let header = ["snapshot_date", "snapshot_label", "usd_to_inr_rate", "total_usd", "total_inr"]
+        let header = ["snapshot_date", "snapshot_label", "usd_to_inr_rate", "total_usd", "total_inr", "snapshot_rates"]
         var rows: [[String]] = [header]
         let dateFmt = DateFormatter()
         dateFmt.dateFormat = "yyyy-MM-dd"
@@ -101,9 +102,9 @@ enum CSVExporter {
         for s in snapshots.sorted(by: { $0.date < $1.date }) {
             let totalUSD = s.values.reduce(0.0) { sum, v in
                 guard let acc = v.account else { return sum }
-                return sum + CurrencyConverter.convert(nativeValue: v.nativeValue,
-                                                       from: acc.nativeCurrency, to: .USD,
-                                                       usdToInrRate: s.usdToInrRate)
+                return sum + (CurrencyConverter.convert(nativeValue: v.nativeValue,
+                                                        from: acc.nativeCurrency, to: .USD,
+                                                        in: s) ?? 0)
             }
             let totalINR = totalUSD * s.usdToInrRate
             rows.append([
@@ -111,7 +112,8 @@ enum CSVExporter {
                 s.label,
                 String(format: "%.4f", s.usdToInrRate),
                 String(format: "%.2f", totalUSD),
-                String(format: "%.2f", totalINR)
+                String(format: "%.2f", totalINR),
+                encodeRates(s)
             ])
         }
         return encode(rows: rows)
@@ -121,7 +123,7 @@ enum CSVExporter {
         let header = [
             "snapshot_date", "snapshot_label", "usd_to_inr_rate",
             "receivable_name", "debtor", "native_currency", "native_value",
-            "value_usd", "value_inr", "note"
+            "value_usd", "value_inr", "note", "snapshot_rates"
         ]
         var rows: [[String]] = [header]
         let dateFmt = DateFormatter()
@@ -132,10 +134,10 @@ enum CSVExporter {
                 guard let r = rv.receivable else { continue }
                 let usd = CurrencyConverter.convert(nativeValue: rv.nativeValue,
                                                     from: r.nativeCurrency, to: .USD,
-                                                    usdToInrRate: s.usdToInrRate)
+                                                    in: s) ?? 0
                 let inr = CurrencyConverter.convert(nativeValue: rv.nativeValue,
                                                     from: r.nativeCurrency, to: .INR,
-                                                    usdToInrRate: s.usdToInrRate)
+                                                    in: s) ?? 0
                 rows.append([
                     dateFmt.string(from: s.date),
                     s.label,
@@ -146,7 +148,8 @@ enum CSVExporter {
                     String(format: "%.2f", rv.nativeValue),
                     String(format: "%.2f", usd),
                     String(format: "%.2f", inr),
-                    rv.note
+                    rv.note,
+                    encodeRates(s)
                 ])
             }
         }
@@ -154,6 +157,15 @@ enum CSVExporter {
     }
 
     // MARK: encode
+
+    /// Serialize a snapshot's full rate table for round-tripping, e.g.
+    /// "INR=83.1000;EUR=0.9210". Empty when only the legacy scalar exists.
+    private static func encodeRates(_ s: Snapshot) -> String {
+        s.ratesPerUSD
+            .sorted { $0.key < $1.key }
+            .map { "\($0.key)=\(String(format: "%.4f", $0.value))" }
+            .joined(separator: ";")
+    }
 
     nonisolated private static func encode(rows: [[String]]) -> String {
         rows.map { row in row.map(escape).joined(separator: ",") }.joined(separator: "\n")

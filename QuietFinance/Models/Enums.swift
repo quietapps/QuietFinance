@@ -1,10 +1,53 @@
 import Foundation
 import SwiftUI
 
+/// Closed set matching frankfurter.app's supported currencies, so every case
+/// is fetchable by construction. Adding cases is additive — stored raw values
+/// ("USD"/"INR") decode unchanged.
 enum Currency: String, Codable, CaseIterable, Identifiable {
-    case USD, INR
+    case USD, INR, EUR, GBP, JPY, AUD, CAD, CHF, CNY, HKD, SGD, KRW, NZD
+    case SEK, NOK, DKK, PLN, CZK, HUF, RON, BGN, ISK, TRY, ILS, ZAR
+    case MXN, BRL, MYR, THB, PHP, IDR
+
     var id: String { rawValue }
-    var symbol: String { self == .USD ? "$" : "₹" }
+
+    var symbol: String {
+        switch self {
+        case .USD: return "$"
+        case .INR: return "₹"
+        case .EUR: return "€"
+        case .GBP: return "£"
+        case .JPY: return "¥"
+        case .AUD: return "A$"
+        case .CAD: return "C$"
+        case .CHF: return "CHF "
+        case .CNY: return "CN¥"
+        case .HKD: return "HK$"
+        case .SGD: return "S$"
+        case .KRW: return "₩"
+        case .NZD: return "NZ$"
+        case .SEK, .NOK, .DKK, .ISK: return "kr "
+        case .PLN: return "zł "
+        case .CZK: return "Kč "
+        case .HUF: return "Ft "
+        case .RON: return "lei "
+        case .BGN: return "лв "
+        case .TRY: return "₺"
+        case .ILS: return "₪"
+        case .ZAR: return "R "
+        case .MXN: return "MX$"
+        case .BRL: return "R$"
+        case .MYR: return "RM "
+        case .THB: return "฿"
+        case .PHP: return "₱"
+        case .IDR: return "Rp "
+        }
+    }
+
+    /// Localized long name, e.g. "Euro", "Indian Rupee".
+    var displayName: String {
+        Locale.current.localizedString(forCurrencyCode: rawValue) ?? rawValue
+    }
 }
 
 enum AssetCategory: String, Codable, CaseIterable, Identifiable {

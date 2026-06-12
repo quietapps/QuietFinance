@@ -1,7 +1,23 @@
 import Foundation
 
 enum CurrencyConverter {
-    /// Convert using the rate locked on the snapshot. Never use today's rate for historical values.
+    /// Convert using the rate table frozen on the snapshot. Never uses today's
+    /// rate for historical values. Returns nil when the snapshot lacks a rate
+    /// for either side of the pair (callers exclude the value and surface a
+    /// warning badge).
+    static func convert(nativeValue: Double,
+                        from source: Currency,
+                        to target: Currency,
+                        in snapshot: Snapshot) -> Double? {
+        guard source != target else { return nativeValue }
+        guard let fromRate = snapshot.rate(for: source), fromRate > 0,
+              let toRate = snapshot.rate(for: target), toRate > 0 else { return nil }
+        // rates are units-per-USD: native / fromRate = USD, × toRate = target.
+        return nativeValue / fromRate * toRate
+    }
+
+    /// Legacy scalar-rate conversion (USD↔INR only). Kept for call sites that
+    /// predate per-snapshot rate tables; new code should pass the snapshot.
     static func convert(nativeValue: Double,
                         from source: Currency,
                         to target: Currency,
@@ -19,7 +35,7 @@ enum CurrencyConverter {
         return convert(nativeValue: assetValue.nativeValue,
                        from: acc.nativeCurrency,
                        to: target,
-                       usdToInrRate: snap.usdToInrRate)
+                       in: snap) ?? 0
     }
 
     /// Same as displayValue but flips the sign for `.debt` accounts so they
@@ -57,12 +73,30 @@ enum CurrencyConverter {
         return convert(nativeValue: receivableValue.nativeValue,
                        from: r.nativeCurrency,
                        to: target,
-                       usdToInrRate: snap.usdToInrRate)
+                       in: snap) ?? 0
     }
 
     static func receivableDisplaySum(_ snapshot: Snapshot, in target: Currency) -> Double {
         snapshot.receivableValues.reduce(0.0) { sum, rv in
             sum + displayValue(for: rv, in: target)
         }
+    }
+
+    /// Number of values (account + receivable) in the snapshot that cannot be
+    /// expressed in `target` because a rate is missing. Non-zero drives the
+    /// "N values not converted" warning badge.
+    static func unconvertibleCount(_ snapshot: Snapshot, in target: Currency) -> Int {
+        var count = 0
+        for v in snapshot.values {
+            guard let acc = v.account else { continue }
+            if convert(nativeValue: v.nativeValue, from: acc.nativeCurrency,
+                       to: target, in: snapshot) == nil { count += 1 }
+        }
+        for rv in snapshot.receivableValues {
+            guard let r = rv.receivable else { continue }
+            if convert(nativeValue: rv.nativeValue, from: r.nativeCurrency,
+                       to: target, in: snapshot) == nil { count += 1 }
+        }
+        return count
     }
 }

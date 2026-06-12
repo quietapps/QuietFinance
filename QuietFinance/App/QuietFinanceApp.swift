@@ -52,6 +52,7 @@ struct QuietFinanceApp: App {
         if !safeMode {
             SeedData.seedIfEmpty(context: container.mainContext)
             Self.backfillAccountSortIndex(context: container.mainContext)
+            Self.backfillSnapshotRates(context: container.mainContext)
             // Skip backup/reminder writes in safe mode: the on-disk store is the
             // corrupt one we deliberately left alone, and we must not overwrite
             // good backups with it.
@@ -135,6 +136,22 @@ struct QuietFinanceApp: App {
         } catch {
             fatalError("Failed to create in-memory fallback ModelContainer: \(error)")
         }
+    }
+
+    /// One-time, idempotent migration to per-snapshot multi-currency rate
+    /// tables: re-encodes each snapshot's already-frozen usdToInrRate as
+    /// `{"INR": rate}`. The rate VALUE never changes, so locked-snapshot
+    /// immutability is preserved — this only changes the encoding.
+    private static func backfillSnapshotRates(context: ModelContext) {
+        guard let snaps = try? context.fetch(FetchDescriptor<Snapshot>()) else { return }
+        var changed = false
+        for s in snaps where s.ratesPerUSDData == nil {
+            if s.usdToInrRate > 0 {
+                s.ratesPerUSDData = try? JSONEncoder().encode(["INR": s.usdToInrRate])
+                changed = true
+            }
+        }
+        if changed { try? context.save() }
     }
 
     /// Assign a stable sortIndex to existing accounts on first launch after the

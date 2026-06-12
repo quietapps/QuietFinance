@@ -28,13 +28,13 @@ struct AccountDetailSheet: View {
 
     private var series: [Point] {
         snapshots.compactMap { s -> Point? in
-            guard let v = s.values.first(where: { $0.account?.id == account.id }) else { return nil }
-            let display = CurrencyConverter.convert(
-                nativeValue: v.nativeValue,
-                from: account.nativeCurrency,
-                to: ccy,
-                usdToInrRate: s.usdToInrRate
-            )
+            guard let v = s.values.first(where: { $0.account?.id == account.id }),
+                  let display = CurrencyConverter.convert(
+                      nativeValue: v.nativeValue,
+                      from: account.nativeCurrency,
+                      to: ccy,
+                      in: s
+                  ) else { return nil }
             return Point(date: s.date, label: s.label, native: v.nativeValue, display: display, snapshotID: s.id)
         }
     }

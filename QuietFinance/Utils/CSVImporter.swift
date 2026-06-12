@@ -250,10 +250,14 @@ enum CSVImporter {
             return i
         }
 
+        // Optional column — present in newer exports only.
+        func optIdx(_ name: String) -> Int? { header.firstIndex(of: name) }
+
         let iDate    = try idx("snapshot_date")
         let iLabel   = try idx("snapshot_label")
         let iLocked  = try idx("is_locked")
         let iRate    = try idx("usd_to_inr_rate")
+        let iRates   = optIdx("snapshot_rates")
         let iPerson  = try idx("person")
         let iCC      = try idx("country_code")
         let iCName   = try idx("country_name")
@@ -314,7 +318,15 @@ enum CSVImporter {
 
             let label = row[iLabel].trimmingCharacters(in: .whitespaces)
             let isLocked = row[iLocked].lowercased() == "true"
-            guard let rate = Double(row[iRate].trimmingCharacters(in: .whitespaces)), rate > 0 else {
+            // Multi-currency rate table ("INR=83.1;EUR=0.92") takes precedence
+            // over the legacy scalar when both are present.
+            let parsedRates: [String: Double] = {
+                guard let iRates, row.count > iRates else { return [:] }
+                return decodeRates(row[iRates])
+            }()
+            let legacyRate = Double(row[iRate].trimmingCharacters(in: .whitespaces)) ?? 0
+            let rate = parsedRates["INR"] ?? legacyRate
+            guard rate > 0 || !parsedRates.isEmpty else {
                 report.rowsRejected += 1
                 report.errors.append("Line \(lineNum): invalid rate.")
                 continue
@@ -421,6 +433,7 @@ enum CSVImporter {
                     label: label.isEmpty ? dateFmt.string(from: date) : label,
                     usdToInrRate: rate
                 )
+                if !parsedRates.isEmpty { s.ratesPerUSD = parsedRates }
                 s.isLocked = isLocked
                 if isLocked { s.lockedAt = .now }
                 context.insert(s)
@@ -445,6 +458,20 @@ enum CSVImporter {
 
         try context.save()
         return report
+    }
+
+    /// Parse "INR=83.1000;EUR=0.9210" into a rate table. Malformed pieces are
+    /// skipped rather than failing the row.
+    private static func decodeRates(_ field: String) -> [String: Double] {
+        var out: [String: Double] = [:]
+        for piece in field.split(separator: ";") {
+            let parts = piece.split(separator: "=", maxSplits: 1)
+            guard parts.count == 2,
+                  let value = Double(parts[1].trimmingCharacters(in: .whitespaces)),
+                  value > 0 else { continue }
+            out[parts[0].trimmingCharacters(in: .whitespaces)] = value
+        }
+        return out
     }
 
     // MARK: - CSV parser (RFC-4180 subset; handles quoted fields, escaped quotes, newlines)

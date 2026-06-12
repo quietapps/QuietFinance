@@ -5,7 +5,12 @@ enum SeedData {
     static func seedIfEmpty(context: ModelContext) {
         let personCount = (try? context.fetchCount(FetchDescriptor<Person>())) ?? 0
         guard personCount == 0 else { return }
+        seedDemo(context: context)
+    }
 
+    /// Insert the demo dataset unconditionally. Callers gate on emptiness
+    /// (seedIfEmpty) or user choice (welcome flow's "Explore with demo data").
+    static func seedDemo(context: ModelContext) {
         // People
         let me = Person(name: "Me")
         let spouse = Person(name: "Spouse")

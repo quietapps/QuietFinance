@@ -3,6 +3,7 @@ import Foundation
 /// Identifiable widgets that compose the Dashboard. User can toggle visibility
 /// and reorder them. Persistence: comma-separated raw values in AppStorage.
 enum DashboardWidget: String, CaseIterable, Identifiable, Codable {
+    case gettingStarted
     case hero
     case digest
     case goal
@@ -23,6 +24,7 @@ enum DashboardWidget: String, CaseIterable, Identifiable, Codable {
 
     var label: String {
         switch self {
+        case .gettingStarted:   return "Getting started"
         case .hero:             return "Hero · Net worth"
         case .digest:           return "Digest sentence"
         case .goal:             return "Goal progress"
@@ -43,6 +45,7 @@ enum DashboardWidget: String, CaseIterable, Identifiable, Codable {
 
     var icon: String {
         switch self {
+        case .gettingStarted:   return "checklist"
         case .hero:             return "house"
         case .digest:           return "text.alignleft"
         case .goal:             return "target"
@@ -62,9 +65,9 @@ enum DashboardWidget: String, CaseIterable, Identifiable, Codable {
     }
 
     static var defaultOrder: [DashboardWidget] {
-        [.hero, .digest, .goal, .milestone, .liquidity, .kpi, .netChange,
-         .currencyExposure, .watchlist, .composition, .allocationDrift,
-         .liabilities, .debtPayoff, .receivables, .movers]
+        [.gettingStarted, .hero, .digest, .goal, .milestone, .liquidity, .kpi,
+         .netChange, .currencyExposure, .watchlist, .composition,
+         .allocationDrift, .liabilities, .debtPayoff, .receivables, .movers]
     }
 }
 

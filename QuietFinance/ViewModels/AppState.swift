@@ -170,6 +170,13 @@ final class AppState: ObservableObject {
     /// Stable palette action ids fired recently, comma-separated, newest first.
     @AppStorage("paletteRecentActionIDs") var paletteRecentActionIDsRaw: String = ""
 
+    // MARK: onboarding
+    /// True once the welcome sheet has been answered (or grandfathered for
+    /// pre-existing installs). Resettable from Settings → "Replay welcome".
+    @AppStorage("welcomeCompleted") var welcomeCompleted: Bool = false
+    @AppStorage("welcomeChoiceRaw") var welcomeChoiceRaw: String = ""
+    @AppStorage("onboardingChecklistDismissed") var onboardingChecklistDismissed: Bool = false
+
     var paletteRecentActionIDs: [String] {
         paletteRecentActionIDsRaw.split(separator: ",").map(String.init)
     }

@@ -141,6 +141,11 @@ struct CommandPalette: View {
                        icon: "gearshape") {
             app.selectedScreen = .settings
         })
+        out.append(Item(id: "action.showWelcome", kind: .action, title: "Show Welcome Guide",
+                       subtitle: "Action · replay first-run intro",
+                       icon: "hand.wave") {
+            app.welcomeCompleted = false
+        })
         return out
     }
 

@@ -132,6 +132,13 @@ struct RootView: View {
             CommandPalette()
                 .environmentObject(app)
         }
+        .sheet(isPresented: Binding(
+            get: { !app.welcomeCompleted },
+            set: { if !$0 { app.welcomeCompleted = true } }
+        )) {
+            WelcomeSheet()
+                .environmentObject(app)
+        }
         .background(
             Button("") { app.commandPaletteOpen = true }
                 .keyboardShortcut("k", modifiers: .command)

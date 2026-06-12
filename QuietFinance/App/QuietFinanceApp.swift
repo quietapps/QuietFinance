@@ -50,7 +50,15 @@ struct QuietFinanceApp: App {
             container = Self.makeInMemoryContainer(schema: schema)
         }
         if !safeMode {
-            SeedData.seedIfEmpty(context: container.mainContext)
+            // First-run experience: an empty store no longer gets demo data
+            // silently — the welcome sheet offers "start fresh" vs "demo".
+            // Existing installs (non-empty store) are grandfathered so they
+            // never see the welcome flow.
+            let defaults = UserDefaults.standard
+            let personCount = (try? container.mainContext.fetchCount(FetchDescriptor<Person>())) ?? 0
+            if personCount > 0 {
+                defaults.set(true, forKey: "welcomeCompleted")
+            }
             Self.backfillAccountSortIndex(context: container.mainContext)
             Self.backfillSnapshotRates(context: container.mainContext)
             // Skip backup/reminder writes in safe mode: the on-disk store is the

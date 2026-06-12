@@ -8,8 +8,14 @@ struct DashboardView: View {
     @EnvironmentObject var app: AppState
     @Query(sort: \Snapshot.date, order: .reverse) private var snapshots: [Snapshot]
     @Query private var allAccounts: [Account]
+    @Query private var people: [Person]
 
     @State private var stats: DashboardStats = .empty
+
+    /// All required onboarding steps done → checklist auto-hides.
+    private var checklistComplete: Bool {
+        !people.isEmpty && !allAccounts.isEmpty && !snapshots.isEmpty
+    }
 
     private var visibleWidgets: [DashboardWidget] {
         let hidden = app.dashboardWidgetsHidden
@@ -17,6 +23,7 @@ struct DashboardView: View {
             if hidden.contains(w) { return false }
             // Auto-hide widgets with no data to avoid empty cards.
             switch w {
+            case .gettingStarted:   return !app.onboardingChecklistDismissed && !checklistComplete
             case .goal:             return app.netWorthGoal > 0
             case .milestone:        return snapshots.count >= 2
             case .netChange:        return stats.netChange != nil
@@ -34,6 +41,8 @@ struct DashboardView: View {
     @ViewBuilder
     private func widgetView(_ w: DashboardWidget) -> some View {
         switch w {
+        case .gettingStarted:
+            GettingStartedPanel()
         case .hero:
             DashboardHeroPanel(active: stats.active,
                                snapshots: Array(snapshots),
@@ -103,21 +112,14 @@ struct DashboardView: View {
     var body: some View {
         Group {
             if snapshots.isEmpty {
-                EditorialEmpty(
-                    eyebrow: "Overview · Net Worth",
-                    title: "A ledger",
-                    titleItalic: "awaits its first entry.",
-                    body: "No snapshots yet. Capture a quarterly snapshot to begin charting trajectory, allocation, and movers across the household.",
-                    detail: "Snapshots are point-in-time totals. One per quarter keeps the trend honest.",
-                    ctaLabel: "Create first snapshot",
-                    cta: {
-                        app.newSnapshotRequested = true
-                        app.selectedScreen = .snapshots
-                    },
-                    secondaryLabel: "Set up accounts first",
-                    secondary: { app.selectedScreen = .accounts },
-                    illustration: "chart.bar.doc.horizontal"
-                )
+                // The widget loop is bypassed here, so the onboarding
+                // checklist must render explicitly above the empty state.
+                VStack(alignment: .leading, spacing: 28) {
+                    if !app.onboardingChecklistDismissed && !checklistComplete {
+                        GettingStartedPanel()
+                    }
+                    emptyState
+                }
             } else {
                 VStack(alignment: .leading, spacing: 28) {
                     ForEach(visibleWidgets, id: \.self) { w in
@@ -131,6 +133,24 @@ struct DashboardView: View {
         .onChange(of: app.displayCurrency) { _, _ in recompute() }
         .onChange(of: snapshotsFingerprint) { _, _ in recompute() }
         .onChange(of: app.includeIlliquidInNetWorth) { _, _ in recompute() }
+    }
+
+    private var emptyState: some View {
+        EditorialEmpty(
+            eyebrow: "Overview · Net Worth",
+            title: "A ledger",
+            titleItalic: "awaits its first entry.",
+            body: "No snapshots yet. Capture a quarterly snapshot to begin charting trajectory, allocation, and movers across the household.",
+            detail: "Snapshots are point-in-time totals. One per quarter keeps the trend honest.",
+            ctaLabel: "Create first snapshot",
+            cta: {
+                app.newSnapshotRequested = true
+                app.selectedScreen = .snapshots
+            },
+            secondaryLabel: "Set up accounts first",
+            secondary: { app.selectedScreen = .accounts },
+            illustration: "chart.bar.doc.horizontal"
+        )
     }
 
     /// Cheap scalar capturing every input that should trigger a recompute —

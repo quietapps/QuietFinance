@@ -1153,6 +1153,19 @@ struct SettingsView: View {
                             .font(Typo.serifItalic(12))
                             .foregroundStyle(Color.lInk3)
                     }
+                    Divider().overlay(Color.lLine)
+                    settingRow(label: "Replay welcome",
+                               sublabel: "Show the first-run intro and getting-started checklist again.") {
+                        GhostButton(action: {
+                            app.onboardingChecklistDismissed = false
+                            app.welcomeCompleted = false
+                        }) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "hand.wave").font(.system(size: 10, weight: .bold))
+                                Text("Replay")
+                            }
+                        }
+                    }
                 }
                 .padding(18)
             }

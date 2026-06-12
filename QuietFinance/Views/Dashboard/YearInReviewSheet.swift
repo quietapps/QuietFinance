@@ -23,7 +23,7 @@ struct YearInReviewSheet: View {
         let period = snapshots
             .filter { $0.date >= cutoff }
             .sorted { $0.date < $1.date }
-        guard period.count >= 2 else { return nil }
+        guard period.count >= 2, let firstSnap = period.first, let lastSnap = period.last else { return nil }
 
         func tot(_ s: Snapshot) -> Double {
             s.totalsValues.reduce(0) {
@@ -32,8 +32,8 @@ struct YearInReviewSheet: View {
         }
 
         let totals: [(Snapshot, Double)] = period.map { ($0, tot($0)) }
-        let firstTotal = totals.first!.1
-        let lastTotal  = totals.last!.1
+        let firstTotal = totals.first?.1 ?? 0
+        let lastTotal  = totals.last?.1 ?? 0
         let totalChange = lastTotal - firstTotal
         let totalChangePct = firstTotal != 0 ? totalChange / abs(firstTotal) * 100 : 0
 
@@ -51,8 +51,6 @@ struct YearInReviewSheet: View {
 
         // Biggest mover account (largest absolute change first vs last snapshot)
         var accountMovers: [(name: String, delta: Double, currency: Currency)] = []
-        let firstSnap = period.first!
-        let lastSnap  = period.last!
         for v in lastSnap.totalsValues {
             guard let acc = v.account else { continue }
             if let prev = firstSnap.values.first(where: { $0.account?.id == acc.id }) {
@@ -64,7 +62,7 @@ struct YearInReviewSheet: View {
         let biggestMover = accountMovers.max { abs($0.delta) < abs($1.delta) }
 
         let f = DateFormatter(); f.dateFormat = "MMM yyyy"
-        let periodStr = "\(f.string(from: period.first!.date)) – \(f.string(from: period.last!.date))"
+        let periodStr = "\(f.string(from: firstSnap.date)) – \(f.string(from: lastSnap.date))"
 
         return ReviewData(
             period: periodStr,

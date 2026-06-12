@@ -54,7 +54,8 @@ enum SeedData {
         ]
         var accMap: [String: Account] = [:]
         for (name, p, c, t, ccy) in accounts {
-            let acc = Account(name: name, person: p, country: c, assetType: typeMap[t]!, nativeCurrency: ccy)
+            guard let type = typeMap[t] else { continue }
+            let acc = Account(name: name, person: p, country: c, assetType: type, nativeCurrency: ccy)
             context.insert(acc)
             accMap[name] = acc
         }
@@ -90,10 +91,12 @@ enum SeedData {
             ("LIC Term",        1_160_000)
         ]
         for (name, v) in q4Values {
-            context.insert(AssetValue(snapshot: q4, account: accMap[name]!, nativeValue: v))
+            guard let acc = accMap[name] else { continue }
+            context.insert(AssetValue(snapshot: q4, account: acc, nativeValue: v))
         }
         for (name, v) in q1Values {
-            context.insert(AssetValue(snapshot: q1, account: accMap[name]!, nativeValue: v))
+            guard let acc = accMap[name] else { continue }
+            context.insert(AssetValue(snapshot: q1, account: acc, nativeValue: v))
         }
 
         try? context.save()

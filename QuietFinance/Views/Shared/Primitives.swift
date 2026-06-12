@@ -104,19 +104,21 @@ struct Sparkline: View {
                     let y = h - (v - minV) / rng * h
                     return CGPoint(x: x, y: max(1, min(h - 1, y)))
                 }
-                ZStack {
-                    Path { p in
-                        p.move(to: CGPoint(x: pts[0].x, y: h))
-                        for pt in pts { p.addLine(to: pt) }
-                        p.addLine(to: CGPoint(x: pts.last!.x, y: h))
-                        p.closeSubpath()
+                if let firstPt = pts.first, let lastPt = pts.last {
+                    ZStack {
+                        Path { p in
+                            p.move(to: CGPoint(x: firstPt.x, y: h))
+                            for pt in pts { p.addLine(to: pt) }
+                            p.addLine(to: CGPoint(x: lastPt.x, y: h))
+                            p.closeSubpath()
+                        }
+                        .fill(fill)
+                        Path { p in
+                            p.move(to: firstPt)
+                            for pt in pts.dropFirst() { p.addLine(to: pt) }
+                        }
+                        .stroke(stroke, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
                     }
-                    .fill(fill)
-                    Path { p in
-                        p.move(to: pts[0])
-                        for pt in pts.dropFirst() { p.addLine(to: pt) }
-                    }
-                    .stroke(stroke, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
                 }
             }
         }

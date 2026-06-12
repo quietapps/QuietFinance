@@ -38,7 +38,8 @@ enum Forecast {
                         goal: Double?) -> Result? {
         guard history.count >= 2 else { return nil }
         let sorted = history.sorted { $0.0 < $1.0 }
-        let t0 = sorted.first!.0
+        guard let firstItem = sorted.first, let lastItem = sorted.last else { return nil }
+        let t0 = firstItem.0
         let xs = sorted.map { $0.0.timeIntervalSince(t0) / 86_400 }   // days
         let ys = sorted.map { $0.1 }
 
@@ -82,7 +83,7 @@ enum Forecast {
 
         // Project forward at monthly steps.
         let cal = Calendar.current
-        let lastDate = sorted.last!.0
+        let lastDate = lastItem.0
         let endDate = cal.date(byAdding: .month, value: max(1, horizonMonths), to: lastDate) ?? lastDate
         var projection: [Point] = []
         var d = lastDate
@@ -99,15 +100,14 @@ enum Forecast {
         if let g = goal, g > 0, let last = ys.last, g > last {
             switch method {
             case .linear:
-                if let m = slopePerDay, m > 0 {
-                    let bIntercept = ys.last! - m * xs.last!
+                if let m = slopePerDay, m > 0, let lastX = xs.last {
+                    let bIntercept = last - m * lastX
                     let xGoal = (g - bIntercept) / m
                     etaForGoal = t0.addingTimeInterval(xGoal * 86_400)
                 }
             case .cagr:
-                if let cagr = cagrPct, cagr > 0, let lastY = ys.last, lastY > 0 {
+                if let cagr = cagrPct, cagr > 0, let lastY = ys.last, lastY > 0, let lastX = xs.last {
                     let m = log(1 + cagr / 100) / 365  // per day
-                    let lastX = xs.last!
                     let xGoal = lastX + log(g / lastY) / m
                     etaForGoal = t0.addingTimeInterval(xGoal * 86_400)
                 }

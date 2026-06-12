@@ -354,7 +354,7 @@ struct AccountsView: View {
             }
             ResizableCell(sizer: sizer, colID: "trend") {
                 let series = cachedTrends[a.id] ?? []
-                let up = series.count >= 2 ? (series.last! >= series.first!) : true
+                let up = series.count >= 2 ? ((series.last ?? 0) >= (series.first ?? 0)) : true
                 Sparkline(values: series,
                           stroke: series.count < 2 ? Color.lInk3 : (up ? Color.lGain : Color.lLoss),
                           fill: (up ? Color.lGain : Color.lLoss).opacity(0.08))

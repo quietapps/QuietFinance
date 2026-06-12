@@ -73,21 +73,21 @@ struct FXRateHistoryPanel: View {
         .padding(18)
     }
 
+    @ViewBuilder
     private var stats: some View {
         let rates = series.map { $0.rate }
-        let cur = series.last!.rate
-        let first = series.first!.rate
-        let hi = rates.max()!
-        let lo = rates.min()!
-        let avg = rates.reduce(0, +) / Double(rates.count)
-        let drift = first == 0 ? 0 : (cur - first) / first * 100
-        return HStack(alignment: .top, spacing: 18) {
-            stat("CURRENT", String(format: "₹%.4f", cur), emphasize: true)
-            stat("RANGE", String(format: "%.2f – %.2f", lo, hi))
-            stat("AVG", String(format: "₹%.4f", avg))
-            stat("DRIFT", String(format: "%@%.2f%%",
-                                 drift >= 0 ? "+" : "−", abs(drift)),
-                 tint: drift >= 0 ? .lGain : .lLoss)
+        if let cur = series.last?.rate, let first = series.first?.rate,
+           let hi = rates.max(), let lo = rates.min() {
+            let avg = rates.reduce(0, +) / Double(rates.count)
+            let drift = first == 0 ? 0 : (cur - first) / first * 100
+            HStack(alignment: .top, spacing: 18) {
+                stat("CURRENT", String(format: "₹%.4f", cur), emphasize: true)
+                stat("RANGE", String(format: "%.2f – %.2f", lo, hi))
+                stat("AVG", String(format: "₹%.4f", avg))
+                stat("DRIFT", String(format: "%@%.2f%%",
+                                     drift >= 0 ? "+" : "−", abs(drift)),
+                     tint: drift >= 0 ? .lGain : .lLoss)
+            }
         }
     }
 

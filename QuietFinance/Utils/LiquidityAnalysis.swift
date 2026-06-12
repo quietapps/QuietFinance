@@ -18,7 +18,7 @@ enum LiquidityAnalysis {
                         displayCurrency: Currency,
                         includeIlliquid: Bool) -> Result? {
         let asc = snapshots.sorted { $0.date < $1.date }
-        guard asc.count >= 1 else { return nil }
+        guard let newest = asc.last else { return nil }
 
         func cashTotal(_ s: Snapshot) -> Double {
             s.totalsValues.reduce(0.0) { acc, v in
@@ -29,7 +29,7 @@ enum LiquidityAnalysis {
             }
         }
 
-        let liquidNow = cashTotal(asc.last!)
+        let liquidNow = cashTotal(newest)
         guard asc.count >= 2 else {
             return Result(liquidNow: liquidNow,
                           monthlyChange: 0,

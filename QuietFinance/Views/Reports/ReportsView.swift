@@ -391,20 +391,21 @@ struct ReportsView: View {
         }
     }
 
+    @ViewBuilder
     private func drilldownStats(_ series: [TypePoint]) -> some View {
-        let first = series.first!
-        let last = series.last!
-        let delta = last.typeValue - first.typeValue
-        let pct = first.typeValue == 0 ? 0 : delta / abs(first.typeValue)
-        let allocShift = last.alloc - first.alloc
-        return HStack(spacing: 24) {
-            stat("FIRST", first.label, Fmt.compact(first.typeValue, ccy))
-            stat("LAST",  last.label,  Fmt.compact(last.typeValue, ccy))
-            stat("Δ",     Fmt.signedDelta(delta, ccy), Fmt.percent(pct, fractionDigits: 1),
-                 tint: delta >= 0 ? .lGain : .lLoss)
-            stat("ALLOC", Fmt.percent(last.alloc, fractionDigits: 1),
-                 "\(Fmt.percent(allocShift, fractionDigits: 1)) shift",
-                 tint: allocShift >= 0 ? .lGain : .lLoss)
+        if let first = series.first, let last = series.last {
+            let delta = last.typeValue - first.typeValue
+            let pct = first.typeValue == 0 ? 0 : delta / abs(first.typeValue)
+            let allocShift = last.alloc - first.alloc
+            HStack(spacing: 24) {
+                stat("FIRST", first.label, Fmt.compact(first.typeValue, ccy))
+                stat("LAST",  last.label,  Fmt.compact(last.typeValue, ccy))
+                stat("Δ",     Fmt.signedDelta(delta, ccy), Fmt.percent(pct, fractionDigits: 1),
+                     tint: delta >= 0 ? .lGain : .lLoss)
+                stat("ALLOC", Fmt.percent(last.alloc, fractionDigits: 1),
+                     "\(Fmt.percent(allocShift, fractionDigits: 1)) shift",
+                     tint: allocShift >= 0 ? .lGain : .lLoss)
+            }
         }
     }
 
@@ -501,8 +502,8 @@ struct ReportsView: View {
                 byKey[key] = s
             }
         }
-        return byKey.keys.sorted().map { key in
-            (key: key, label: key.replacingOccurrences(of: "-", with: " "), snapshot: byKey[key]!)
+        return byKey.keys.sorted().compactMap { key in
+            byKey[key].map { (key: key, label: key.replacingOccurrences(of: "-", with: " "), snapshot: $0) }
         }
     }
 

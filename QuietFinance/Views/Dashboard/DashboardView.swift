@@ -341,9 +341,9 @@ struct DashboardView: View {
     }
 
     private var yearAgoSnapshot: Snapshot? {
-        guard let active = activeSnapshot else { return nil }
-        let oneYearAgo = Calendar.current.date(
-            byAdding: .year, value: -1, to: active.date)!
+        guard let active = activeSnapshot,
+              let oneYearAgo = Calendar.current.date(
+                  byAdding: .year, value: -1, to: active.date) else { return nil }
         return sortedAsc
             .filter { $0.id != active.id && $0.date <= active.date }
             .min(by: { abs($0.date.timeIntervalSince(oneYearAgo))
@@ -1277,7 +1277,7 @@ struct DashboardView: View {
     private var movers: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHead(title: "Biggest movers", emphasis: "— this quarter",
-                        rightLabel: prevSnapshot != nil ? "\(prevSnapshot!.label) → \(activeSnapshot?.label ?? "—")" : nil)
+                        rightLabel: prevSnapshot.map { "\($0.label) → \(activeSnapshot?.label ?? "—")" })
             Panel {
                 VStack(spacing: 0) {
                     moversHeader

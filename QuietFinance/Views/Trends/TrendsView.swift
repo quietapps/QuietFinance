@@ -890,8 +890,7 @@ struct TrendsView: View {
         cachedDeltaAbs = cachedCurrentTotal - cachedStartTotal
         cachedDeltaPct = cachedStartTotal == 0 ? 0 : (cachedCurrentTotal - cachedStartTotal) / abs(cachedStartTotal) * 100
 
-        if totals.count >= 2 {
-            let last = totals.last!
+        if totals.count >= 2, let last = totals.last {
             let prev = totals[totals.count - 2]
             cachedQoQAbs = last.total - prev.total
             cachedQoQPct = prev.total == 0 ? 0 : (last.total - prev.total) / abs(prev.total) * 100
@@ -932,9 +931,10 @@ struct TrendsView: View {
 
             for (label, value) in bucket {
                 let col = colorByLabel[label] ?? Palette.fallback(for: label)
-                if byLabel[label] == nil { byLabel[label] = (col, []) }
-                byLabel[label]!.color = col
-                byLabel[label]!.points.append(SeriesPoint(date: s.date, label: s.label, value: value))
+                var entry = byLabel[label] ?? (col, [])
+                entry.color = col
+                entry.points.append(SeriesPoint(date: s.date, label: s.label, value: value))
+                byLabel[label] = entry
             }
         }
 

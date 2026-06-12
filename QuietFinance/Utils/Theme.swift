@@ -261,7 +261,7 @@ enum Palette {
             return true
         }
         let pool = available.isEmpty ? Ink.chart : available
-        return pool.randomElement()!.color
+        return (pool.randomElement() ?? Ink.chart[0]).color
     }
 
     static var up:   Color { Ink.gain.color }

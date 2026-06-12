@@ -28,26 +28,26 @@ struct QuietFinanceApp: App {
             Receivable.self, ReceivableValue.self,
             ExchangeRateHistory.self
         ])
-        guard let storeURL = BackupService.storeURL() else {
-            fatalError("Could not resolve store URL")
-        }
-        let config = ModelConfiguration(schema: schema, url: storeURL)
         var safeMode = false
-        do {
-            container = try ModelContainer(for: schema, configurations: [config])
-        } catch {
-            // A corrupt or schema-incompatible store would otherwise crash-loop
-            // the app on every launch. Fall back to a non-persistent in-memory
-            // container so the app opens, leaving the on-disk file untouched for
-            // recovery (Settings → restore from backup, or manual file fix).
-            safeMode = true
-            Self.safeModeReason = "Your data file couldn’t be opened, so Quiet Finance is running in temporary safe mode. Changes made now will NOT be saved. Your file on disk is untouched — restore a backup from Settings, then relaunch.\n\nDetails: \(error.localizedDescription)"
+        if let storeURL = BackupService.storeURL() {
+            let config = ModelConfiguration(schema: schema, url: storeURL)
             do {
-                let memConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-                container = try ModelContainer(for: schema, configurations: [memConfig])
+                container = try ModelContainer(for: schema, configurations: [config])
             } catch {
-                fatalError("Failed to create in-memory fallback ModelContainer: \(error)")
+                // A corrupt or schema-incompatible store would otherwise crash-loop
+                // the app on every launch. Fall back to a non-persistent in-memory
+                // container so the app opens, leaving the on-disk file untouched for
+                // recovery (Settings → restore from backup, or manual file fix).
+                safeMode = true
+                Self.safeModeReason = "Your data file couldn’t be opened, so Quiet Finance is running in temporary safe mode. Changes made now will NOT be saved. Your file on disk is untouched — restore a backup from Settings, then relaunch.\n\nDetails: \(error.localizedDescription)"
+                container = Self.makeInMemoryContainer(schema: schema)
             }
+        } else {
+            // Application Support could not be resolved (sandbox/permission issue).
+            // Same safe-mode treatment as a corrupt store: open in memory, warn.
+            safeMode = true
+            Self.safeModeReason = "Quiet Finance couldn’t access its data folder (Application Support), so it is running in temporary safe mode. Changes made now will NOT be saved. Check disk permissions, then relaunch."
+            container = Self.makeInMemoryContainer(schema: schema)
         }
         if !safeMode {
             SeedData.seedIfEmpty(context: container.mainContext)
@@ -92,6 +92,7 @@ struct QuietFinanceApp: App {
                     .environmentObject(app)
                     .environmentObject(undo)
                     .environmentObject(lockGate)
+                    .environmentObject(ToastCenter.shared)
                     .onAppear {
                         if !lockGate.isLocked { lockGate.startIdleMonitorIfConfigured() }
                     }
@@ -121,6 +122,18 @@ struct QuietFinanceApp: App {
             SnapshotCommands()
             SearchCommands()
             UndoDeleteCommands()
+        }
+    }
+
+    /// Build the non-persistent fallback container used by safe mode. If even
+    /// this fails the Schema itself is invalid — a programmer error that can't
+    /// occur in a shipped build — so crashing with a clear message is correct.
+    private static func makeInMemoryContainer(schema: Schema) -> ModelContainer {
+        let memConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        do {
+            return try ModelContainer(for: schema, configurations: [memConfig])
+        } catch {
+            fatalError("Failed to create in-memory fallback ModelContainer: \(error)")
         }
     }
 

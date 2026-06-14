@@ -5,7 +5,7 @@ All notable changes to **QuietFinance** (Quiet Finance) are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).  
 Version headings match **semver** derived from **`git log`** (newest-first). Xcode **`MARKETING_VERSION`** reads the same numeric line (e.g. `2.4` ≡ `2.4.0`); **`CURRENT_PROJECT_VERSION`** is the **build**.
 
-## [3.1.0] - 2026-06-12
+## [3.0.2] - 2026-06-14
 
 ### Added
 

@@ -9,16 +9,16 @@ function HeroChart({ data }) {
   return (
     <div className="qf-hero-chart">
       <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-        <path d={d} stroke="#1A74C4" strokeWidth=".7" fill="none" strokeLinecap="round"/>
+        <path d={d} stroke="#1E88E5" strokeWidth=".7" fill="none" strokeLinecap="round"/>
         <path d={d + ` L${w},${h} L0,${h} Z`} fill="url(#qfgrad)" opacity=".22"/>
         <defs>
           <linearGradient id="qfgrad" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#1A74C4"/>
-            <stop offset="1" stopColor="#1A74C4" stopOpacity="0"/>
+            <stop offset="0" stopColor="#1E88E5"/>
+            <stop offset="1" stopColor="#1E88E5" stopOpacity="0"/>
           </linearGradient>
         </defs>
         {/* dashed baseline */}
-        <line x1="0" x2={w} y1={h-1} y2={h-1} stroke="#1A74C4" strokeOpacity=".4" strokeDasharray="1.5 2" strokeWidth=".4"/>
+        <line x1="0" x2={w} y1={h-1} y2={h-1} stroke="#1E88E5" strokeOpacity=".4" strokeDasharray="1.5 2" strokeWidth=".4"/>
       </svg>
     </div>
   );

@@ -20,7 +20,7 @@ For quick generation:
 
 | Source | Where | Used for |
 |---|---|---|
-| Brand business-card mockup | `uploads/SCR-20260518-njai.png` | Logo, primary blue (sampled `#1A74C4`), wordmark style |
+| Brand business-card mockup | `uploads/SCR-20260518-njai.png` | Logo, primary blue (sampled `#1E88E5`), wordmark style |
 | Quiet Apps GitHub org | https://github.com/orgs/quietapps/repositories | Product roster, app taglines |
 | QuietFinance repo | https://github.com/quietapps/QuietFinance | Net-worth tracker, SwiftUI + SwiftData, local-only |
 | QuietLens repo | https://github.com/quietapps/QuietLens | Menu bar app — dims/blurs unfocused windows |
@@ -88,7 +88,9 @@ Common DNA across all four:
 ## Visual foundations
 
 ### Color
-- **Quiet Blue `#1A74C4`** is the brand. Used at full strength on the primary CTA, app icon backgrounds, and accent strokes. Sparingly elsewhere.
+- **Quiet Blue `#1E88E5`** is the brand. Used at full strength on the primary CTA, app icon backgrounds, and accent strokes. Sparingly elsewhere.
+- **Secondary accent `#80CBC4`** (Light Tal) for tertiary highlights and the focus indicator chip in Quiet Lens.
+- **Focus Grey `#E0E0E0`** for HUD chip backgrounds and the in-Lens controls.
 - **Neutrals are cool-neutral**, not warm. Page canvas is `#F7F8FA`, not cream.
 - **No purples, no gradients-as-decoration.** A subtle blue→darker-blue gradient on the app icon mark is the only sanctioned gradient.
 - **Dark surfaces** are near-black `#0B0D11`, not gray. Used for menu bar overlays, the Lens dimming scrim, and the Notch widget.
@@ -124,7 +126,7 @@ Common DNA across all four:
 | **Hover** (button) | Background shifts 1 step darker (`--qa-blue-600` for primary). No scale, no shadow change. |
 | **Hover** (row) | Background fills with `--qa-bg-3`. No border change. |
 | **Press** | Background shifts another step + content scales to `0.98` for 80ms, then snaps back. |
-| **Focus (keyboard)** | 3px `rgba(26,116,196,0.35)` outline ring offset 2px. Never removed. |
+| **Focus (keyboard)** | 3px `rgba(30, 136, 229,0.35)` outline ring offset 2px. Never removed. |
 | **Disabled** | 40% opacity. No interaction styles. |
 | **Loading** | Indeterminate horizontal bar at the top of the surface, 2px tall, `--qa-blue` traveling. |
 

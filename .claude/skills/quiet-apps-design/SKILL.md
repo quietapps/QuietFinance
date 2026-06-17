@@ -35,7 +35,7 @@ Then:
 
 ## Non-negotiables
 
-- **Quiet Blue `#1A74C4`** is the only brand color. Greens/reds only for semantic state (success / error).
+- **Quiet Blue `#1E88E5`** is the only brand color. Secondary accent Tal `#80CBC4` for tertiary state. Greens/reds only for semantic state (success / error).
 - **SF Pro Display** for display + UI; **Geist Mono** for numerics, code, time, IDs. Use `font-variant-numeric: tabular-nums` for any column of numbers.
 - **Brand wordmark is always lowercase**: "quiet apps", "quiet lens". UI labels use sentence case ("Add account", never "Add Account"). Body prose uses normal title casing.
 - **No exclamation marks** in product copy. No emoji in product chrome (release notes only).

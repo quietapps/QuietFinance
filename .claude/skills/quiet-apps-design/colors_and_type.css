@@ -1,7 +1,7 @@
 /* ============================================================
    Quiet Apps — Design tokens
    ----------------------------------------------------------------
-   Brand primary sampled directly from the business card: #1A74C4.
+   Brand primary: #1E88E5.
    Type stack uses SF Pro Display (display/UI) + Geist Mono (numeric/code).
    SF Pro Display is loaded from local OTF files under fonts/.
    The uploaded set provides upright 400/500/700 plus a full italic
@@ -84,7 +84,7 @@
   --qa-bg-1:           #FFFFFF;   /* surface */
   --qa-bg-2:           #F7F8FA;   /* canvas / page */
   --qa-bg-3:           #EEF0F3;   /* subtle */
-  --qa-bg-tint:        #F3F7FC;   /* faint blue wash */
+  --qa-bg-tint:        #F4F9FE;   /* faint blue wash */
 
   /* Dark surfaces — for menu bar overlays, blur scrims */
   --qa-dark-1:         #0B0D11;
